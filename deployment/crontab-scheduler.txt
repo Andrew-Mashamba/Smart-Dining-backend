@@ -1,0 +1,74 @@
+# =====================================================
+# Laravel Task Scheduler - Cron Configuration
+# =====================================================
+# This cron entry ensures Laravel's task scheduler runs every minute.
+# All scheduled tasks are defined in routes/console.php
+#
+# Installation Instructions:
+# 1. Edit the crontab for your web server user:
+#    sudo crontab -e -u www-data
+#    OR
+#    crontab -e (if running as deployment user)
+#
+# 2. Add the line below to the crontab:
+#    (Update the path to match your Laravel installation)
+#
+# 3. Save and exit the editor
+#
+# 4. Verify the cron is installed:
+#    sudo crontab -l -u www-data
+#    OR
+#    crontab -l
+#
+# 5. Check cron logs to ensure it's running:
+#    tail -f /var/log/syslog | grep CRON
+#    OR
+#    tail -f /var/www/html/laravel-app/storage/logs/scheduler.log
+# =====================================================
+
+# Run Laravel Scheduler every minute
+* * * * * cd /var/www/html/laravel-app && php artisan schedule:run >> /var/www/html/laravel-app/storage/logs/scheduler.log 2>&1
+
+# =====================================================
+# EXPLANATION:
+# =====================================================
+# * * * * *  - Run every minute (minute, hour, day, month, weekday)
+# cd /var/www/html/laravel-app - Change to your Laravel project directory
+# php artisan schedule:run - Run the Laravel scheduler
+# >> /var/www/.../scheduler.log - Append output to log file
+# 2>&1 - Redirect errors to the same log file
+#
+# =====================================================
+# SCHEDULED TASKS (defined in routes/console.php):
+# =====================================================
+# - Daily database backup at 2:00 AM
+# - Backup cleanup at 1:00 AM
+# - Daily sales summary email at 8:00 AM
+# - Session garbage collection at 3:00 AM
+# - Log cleanup weekly on Sunday at 1:00 AM
+# - Notification pruning weekly
+# - Order status updates every 5 minutes
+# - Reminder notifications hourly (9 AM - 10 PM)
+# - Queue monitoring every 5 minutes
+# - Failed job cleanup daily
+# - Application optimization daily at 4:00 AM
+#
+# =====================================================
+# TROUBLESHOOTING:
+# =====================================================
+# If the scheduler isn't running:
+# 1. Check cron is installed: systemctl status cron
+# 2. Verify file permissions on artisan: chmod +x artisan
+# 3. Check PHP path is correct: which php
+# 4. Review scheduler log: tail -f storage/logs/scheduler.log
+# 5. Test manually: php artisan schedule:run -v
+# 6. Ensure storage/logs is writable: chmod -R 775 storage
+#
+# =====================================================
+# ALTERNATIVE: System-wide Cron (root)
+# =====================================================
+# If you need to run as a specific user, use this format:
+# * * * * * www-data cd /var/www/html/laravel-app && php artisan schedule:run >> /var/www/html/laravel-app/storage/logs/scheduler.log 2>&1
+#
+# Add to /etc/crontab instead of user crontab
+# =====================================================

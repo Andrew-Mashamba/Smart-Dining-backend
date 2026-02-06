@@ -1,0 +1,36 @@
+# Laravel Task Scheduler Cron Configuration
+# Add this to your production server's crontab
+# Edit crontab: crontab -e
+# View current crontab: crontab -l
+
+# Laravel Scheduler - Runs every minute to check for scheduled tasks
+# This single cron entry handles all scheduled tasks defined in routes/console.php
+* * * * * cd /var/www/html/laravel-app && php artisan schedule:run >> /dev/null 2>&1
+
+# Alternative with logging (useful for debugging):
+# * * * * * cd /var/www/html/laravel-app && php artisan schedule:run >> /var/www/html/laravel-app/storage/logs/scheduler.log 2>&1
+
+# IMPORTANT:
+# 1. Replace /var/www/html/laravel-app with your actual deployment path
+# 2. Ensure the PHP binary path is correct (use 'which php' to find it)
+# 3. If using a specific PHP version, use the full path:
+#    * * * * * cd /var/www/html/laravel-app && /usr/bin/php8.3 artisan schedule:run >> /dev/null 2>&1
+
+# The Laravel scheduler (schedule:run) will automatically execute all tasks defined in:
+# - routes/console.php (Laravel 11+)
+# - app/Console/Kernel.php (Laravel 10 and below)
+
+# Currently scheduled tasks include:
+# - Daily database backup at 2:00 AM
+# - Daily sales summary email at 8:00 AM
+# - Clear expired sessions at 3:00 AM
+# - Cleanup old logs weekly on Sunday at 1:00 AM
+# - Prune old notifications weekly
+# - Update order statuses every 5 minutes
+# - Send reminder notifications hourly (9 AM - 10 PM)
+# - Monitor queue size every 5 minutes
+# - Prune failed jobs daily
+# - Optimize application daily at 4:00 AM
+
+# After adding to crontab, verify it's active:
+# crontab -l | grep schedule:run

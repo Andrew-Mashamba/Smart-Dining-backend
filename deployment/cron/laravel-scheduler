@@ -1,0 +1,9 @@
+# Laravel Task Scheduler
+# Add this to your crontab with: crontab -e
+# Or copy to /etc/cron.d/laravel-scheduler (requires root)
+
+# Run Laravel scheduler every minute
+* * * * * cd /var/www/html && php artisan schedule:run >> /dev/null 2>&1
+
+# Alternative with logging (recommended for debugging)
+# * * * * * cd /var/www/html && php artisan schedule:run >> /var/www/html/storage/logs/scheduler.log 2>&1

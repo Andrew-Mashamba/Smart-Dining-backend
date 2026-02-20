@@ -39,13 +39,13 @@ class MenuController extends Controller
             'category_id' => 'nullable|exists:menu_categories,id',
         ]);
 
-        $query = \App\Models\MenuItem::query()->where('available', true);
+        $query = \App\Models\MenuItem::query()->where('status', 'available');
 
         if ($request->has('category_id')) {
             $query->where('category_id', $request->category_id);
         }
 
-        $items = $query->with('category')->get();
+        $items = $query->with('menuCategory')->get();
 
         return response()->json([
             'items' => \App\Http\Resources\MenuItemResource::collection($items),

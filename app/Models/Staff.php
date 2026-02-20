@@ -106,6 +106,14 @@ class Staff extends Authenticatable
     }
 
     /**
+     * Get FCM device tokens for this staff member.
+     */
+    public function deviceTokens(): HasMany
+    {
+        return $this->hasMany(DeviceToken::class);
+    }
+
+    /**
      * Get all inventory transactions created by this staff member.
      */
     public function inventoryTransactions(): HasMany

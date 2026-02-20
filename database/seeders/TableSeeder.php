@@ -9,50 +9,63 @@ class TableSeeder extends Seeder
 {
     /**
      * Run the database seeds.
-     * Creates 20 tables across indoor, outdoor, and bar sections
+     * Empties the tables table and re-inserts with nomenclature:
+     * - Indoor: T + 4 digits (e.g. T0001, T0002)
+     * - Outdoor: OT + 3 digits (e.g. OT001, OT002)
+     * - Bar: BT + 2 digits (e.g. BT01, BT02)
+     * Mix of statuses: mostly available, some occupied/reserved.
      */
     public function run(): void
     {
-        $tables = [];
+        // Delete all tables (orders.table_id and guest_sessions.table_id will be set null via FK)
+        Table::query()->delete();
 
-        // Indoor Tables (10 tables)
-        for ($i = 1; $i <= 10; $i++) {
-            $tables[] = [
-                'name' => "Table $i",
+        $toInsert = [];
+
+        // Indoor: T0001–T0008 (8 tables), sensible capacities, mostly available
+        $indoorCapacities = [2, 4, 4, 6, 2, 4, 6, 4];
+        $indoorStatuses = ['available', 'available', 'occupied', 'available', 'available', 'reserved', 'available', 'available'];
+        for ($i = 1; $i <= 8; $i++) {
+            $toInsert[] = [
+                'name' => 'T' . str_pad((string) $i, 4, '0', STR_PAD_LEFT),
                 'location' => 'indoor',
-                'capacity' => ($i % 3 === 0) ? 6 : (($i % 2 === 0) ? 4 : 2),
-                'status' => 'available',
+                'capacity' => $indoorCapacities[$i - 1],
+                'status' => $indoorStatuses[$i - 1],
             ];
         }
 
-        // Outdoor Tables (6 tables)
-        for ($i = 11; $i <= 16; $i++) {
-            $tables[] = [
-                'name' => "Table $i (Outdoor)",
+        // Outdoor: OT001–OT003 (3 tables)
+        $outdoorCapacities = [4, 2, 4];
+        $outdoorStatuses = ['available', 'occupied', 'available'];
+        for ($i = 1; $i <= 3; $i++) {
+            $toInsert[] = [
+                'name' => 'OT' . str_pad((string) $i, 3, '0', STR_PAD_LEFT),
                 'location' => 'outdoor',
-                'capacity' => ($i % 2 === 0) ? 4 : 2,
-                'status' => 'available',
+                'capacity' => $outdoorCapacities[$i - 1],
+                'status' => $outdoorStatuses[$i - 1],
             ];
         }
 
-        // Bar Seats (4 tables/seats)
-        for ($i = 1; $i <= 4; $i++) {
-            $tables[] = [
-                'name' => "Bar Seat $i",
+        // Bar: BT01–BT03 (3 seats)
+        $barCapacities = [2, 2, 2];
+        $barStatuses = ['available', 'available', 'occupied'];
+        for ($i = 1; $i <= 3; $i++) {
+            $toInsert[] = [
+                'name' => 'BT' . str_pad((string) $i, 2, '0', STR_PAD_LEFT),
                 'location' => 'bar',
-                'capacity' => 2,
-                'status' => 'available',
+                'capacity' => $barCapacities[$i - 1],
+                'status' => $barStatuses[$i - 1],
             ];
         }
 
-        foreach ($tables as $table) {
-            Table::create($table);
+        foreach ($toInsert as $row) {
+            Table::create($row);
         }
 
-        $this->command->info('✓ Tables seeded successfully!');
-        $this->command->info('  - 10 indoor tables');
-        $this->command->info('  - 6 outdoor tables');
-        $this->command->info('  - 4 bar seats');
-        $this->command->info('  - Total: 20 tables');
+        $this->command->info('✓ Tables seeded with new nomenclature');
+        $this->command->info('  - 8 indoor (T0001–T0008)');
+        $this->command->info('  - 3 outdoor (OT001–OT003)');
+        $this->command->info('  - 3 bar (BT01–BT03)');
+        $this->command->info('  - Total: 14 tables');
     }
 }

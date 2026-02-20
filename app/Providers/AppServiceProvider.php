@@ -27,5 +27,17 @@ class AppServiceProvider extends ServiceProvider
     {
         // Register Order observer for WhatsApp notifications
         Order::observe(OrderObserver::class);
+
+        // Fix Livewire asset URL for sub-directory deployment.
+        // When APP_URL includes a path (e.g. /Smart-Dining), the Livewire
+        // script tag must include that prefix so the browser requests the
+        // correct URL instead of a bare /livewire/livewire.js (which 404s).
+        $appPath = parse_url(config('app.url', ''), PHP_URL_PATH);
+
+        if ($appPath && $appPath !== '/') {
+            $prefix = rtrim($appPath, '/');
+            $file = config('app.debug') ? 'livewire.js' : 'livewire.min.js';
+            config(['livewire.asset_url' => "{$prefix}/livewire/{$file}"]);
+        }
     }
 }

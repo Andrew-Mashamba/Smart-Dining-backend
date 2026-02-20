@@ -174,12 +174,14 @@ class AuthController extends Controller
     }
 
     /**
-     * Get list of all active staff members for PIN login selection
-     * Returns basic info (id, name, role) - PIN is mandatory for all staff
+     * Get list of all active staff members for PIN login selection.
+     * Returns only staff who have a PIN set (id, name, role).
      */
     public function getStaffForPinLogin()
     {
         $staff = Staff::where('status', 'active')
+            ->whereNotNull('pin')
+            ->where('pin', '!=', '')
             ->select('id', 'name', 'role')
             ->orderBy('name')
             ->get();
@@ -194,6 +196,9 @@ class AuthController extends Controller
      */
     public function logout(Request $request)
     {
+        // Remove FCM device tokens for this staff member
+        $request->user()->deviceTokens()->delete();
+
         $request->user()->currentAccessToken()->delete();
 
         return response()->json([

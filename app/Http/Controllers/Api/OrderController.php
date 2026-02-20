@@ -8,6 +8,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreOrderRequest;
 use App\Http\Requests\UpdateOrderStatusRequest;
 use App\Models\Order;
+use App\Models\Staff;
 use App\Services\OrderManagement\OrderDistributionService;
 use App\Services\OrderManagement\OrderService;
 use Barryvdh\DomPDF\Facade\Pdf;
@@ -69,17 +70,20 @@ class OrderController extends Controller
     /**
      * Create a new order
      *
-     * Waiters automatically get assigned as the order's waiter.
-     * Managers and admins can specify a different waiter_id if needed.
+     * Public endpoint (no auth required). When authenticated, waiter is taken from the user;
+     * otherwise from request waiter_id or the first waiter in the system.
      */
     public function store(StoreOrderRequest $request)
     {
         $validated = $request->validated();
         $staff = $request->user();
 
-        // Ensure waiter_id is set
+        // Ensure waiter_id is set: from auth user, request body, or default to first waiter
         if (! isset($validated['waiter_id'])) {
-            $validated['waiter_id'] = $staff->id;
+            $validated['waiter_id'] = $staff?->id ?? Staff::where('role', 'waiter')->value('id');
+        }
+        if (empty($validated['waiter_id'])) {
+            return response()->json(['message' => 'No waiter available. Add a waiter staff member.'], 422);
         }
 
         $order = $this->orderService->createOrder($validated);

@@ -24,6 +24,9 @@ Route::middleware('auth:sanctum')->group(function () {
 // Public menu routes
 Route::get('menu', [MenuController::class, 'index']);
 Route::get('menu/items', [MenuController::class, 'items']);
+
+// Public order creation (no auth required; waiter_id may be sent in body or derived from default)
+Route::post('orders', [OrderController::class, 'store']);
 Route::get('menu/categories', [MenuController::class, 'categories']);
 Route::get('menu/popular', [MenuController::class, 'popular']);
 Route::get('menu/search', [MenuController::class, 'search']);
@@ -32,9 +35,8 @@ Route::get('menu/{id}', [MenuController::class, 'show']);
 // Protected routes (require authentication)
 Route::middleware('auth:sanctum')->group(function () {
 
-    // Waiter routes: can create orders, view own orders, process payments
+    // Waiter routes: can add items to orders, mark served, etc.
     Route::middleware(['api.role:waiter,manager,admin'])->group(function () {
-        Route::post('orders', [OrderController::class, 'store']);
         Route::post('orders/{id}/items', [OrderController::class, 'addItems']);
         Route::post('orders/{id}/serve', [OrderController::class, 'markAsServed']);
         Route::patch('tables/{id}/status', [TableController::class, 'updateStatus']);

@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Api\AuthController;
+use App\Http\Controllers\Api\DeviceTokenController;
 use App\Http\Controllers\Api\GuestController;
 use App\Http\Controllers\Api\MenuController;
 use App\Http\Controllers\Api\OrderController;
@@ -31,6 +32,10 @@ Route::get('menu/{id}', [MenuController::class, 'show']);
 
 // Protected routes (require authentication)
 Route::middleware('auth:sanctum')->group(function () {
+
+    // FCM device token registration (all authenticated staff)
+    Route::post('device-tokens', [DeviceTokenController::class, 'store']);
+    Route::delete('device-tokens', [DeviceTokenController::class, 'destroy']);
 
     // Waiter routes: can create orders, view own orders, process payments
     Route::middleware(['api.role:waiter,manager,admin'])->group(function () {

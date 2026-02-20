@@ -46,7 +46,7 @@ class OrderDistributionService
     {
         // Mark items as confirmed for kitchen
         $foodItems->each(function ($item) {
-            $item->update(['status' => 'confirmed']);
+            $item->update(['prep_status' => 'confirmed']);
         });
 
         // In a real implementation, this would:
@@ -66,7 +66,7 @@ class OrderDistributionService
     {
         // Mark items as confirmed for bar
         $drinkItems->each(function ($item) {
-            $item->update(['status' => 'confirmed']);
+            $item->update(['prep_status' => 'confirmed']);
         });
 
         // In a real implementation, this would:
@@ -96,7 +96,7 @@ class OrderDistributionService
         }
 
         $item->update([
-            'status' => 'preparing',
+            'prep_status' => 'preparing',
             'prepared_by' => $staff->id,
         ]);
     }
@@ -106,11 +106,11 @@ class OrderDistributionService
      */
     public function markItemReady(OrderItem $item): void
     {
-        if ($item->status !== 'preparing') {
+        if ($item->prep_status !== 'preparing') {
             throw new \Exception('Item must be in preparing status to mark as ready');
         }
 
-        $item->update(['status' => 'ready']);
+        $item->update(['prep_status' => 'ready']);
 
         // Check if all items in the order are ready
         $this->checkOrderReadiness($item->order);
@@ -122,10 +122,10 @@ class OrderDistributionService
     protected function checkOrderReadiness(Order $order): void
     {
         $allItemsReady = $order->items()
-            ->whereNotIn('status', ['cancelled'])
+            ->whereNotIn('prep_status', ['cancelled'])
             ->get()
             ->every(function ($item) {
-                return $item->status === 'ready';
+                return $item->prep_status === 'ready';
             });
 
         if ($allItemsReady && $order->status === 'preparing') {
@@ -147,7 +147,7 @@ class OrderDistributionService
         return OrderItem::whereHas('menuItem', function ($query) use ($prepArea) {
             $query->where('prep_area', $prepArea);
         })
-            ->whereIn('status', ['confirmed', 'preparing'])
+            ->whereIn('prep_status', ['confirmed', 'preparing'])
             ->with(['order.table', 'menuItem'])
             ->orderBy('created_at', 'asc')
             ->get();
@@ -159,7 +159,7 @@ class OrderDistributionService
     public function getItemsByStaff(Staff $staff): Collection
     {
         return OrderItem::where('prepared_by', $staff->id)
-            ->whereIn('status', ['preparing', 'ready'])
+            ->whereIn('prep_status', ['preparing', 'ready'])
             ->with(['order.table', 'menuItem'])
             ->get();
     }

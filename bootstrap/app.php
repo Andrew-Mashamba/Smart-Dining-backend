@@ -29,6 +29,11 @@ return Application::configure(basePath: dirname(__DIR__))
             \App\Http\Middleware\LogApiRequests::class,
         ]);
 
+        // Fix Livewire update URI for sub-directory deployment
+        $middleware->web(append: [
+            \App\Http\Middleware\FixLivewireSubdirectory::class,
+        ]);
+
         // Redirect authenticated users trying to access guest routes to /dashboard
         $middleware->redirectGuestsTo('/login');
         $middleware->redirectUsersTo('/dashboard');

@@ -27,7 +27,7 @@
         }
     }"
     x-init="
-        @this.on('new-order-alert', () => {
+        $wire.on('new-order-alert', () => {
             playAlert();
             // Flash animation for new orders
             const cards = document.querySelectorAll('.order-card');

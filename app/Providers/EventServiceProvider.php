@@ -2,8 +2,6 @@
 
 namespace App\Providers;
 
-use App\Events\OrderCreated;
-use App\Listeners\DeductInventoryStock;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Auth\Listeners\SendEmailVerificationNotification;
 use Illuminate\Foundation\Support\Providers\EventServiceProvider as ServiceProvider;
@@ -20,8 +18,14 @@ class EventServiceProvider extends ServiceProvider
         Registered::class => [
             SendEmailVerificationNotification::class,
         ],
-        OrderCreated::class => [
-            DeductInventoryStock::class,
+        \App\Events\OrderItemUpdated::class => [
+            \App\Listeners\SendPrepStatusFcmNotification::class,
+        ],
+        \App\Events\OrderItemReady::class => [
+            \App\Listeners\NotifyWaiter::class,
+        ],
+        \App\Events\OrderStatusUpdated::class => [
+            \App\Listeners\SendOrderReadyFcmNotification::class,
         ],
     ];
 

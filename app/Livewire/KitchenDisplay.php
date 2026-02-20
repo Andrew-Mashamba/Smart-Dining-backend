@@ -53,7 +53,7 @@ class KitchenDisplay extends Component
             return;
         }
 
-        $orderItem = OrderItem::with('menuItem')->findOrFail($itemId);
+        $orderItem = OrderItem::with(['menuItem', 'order.table'])->findOrFail($itemId);
         $orderItem->prep_status = $status;
         $orderItem->save();
 

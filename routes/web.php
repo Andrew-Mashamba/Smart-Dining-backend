@@ -5,10 +5,11 @@ use App\Http\Controllers\Web\AuthController;
 use App\Http\Controllers\Web\BarController;
 use App\Http\Controllers\Web\KitchenController;
 use App\Http\Controllers\Web\ManagerController;
-use App\Http\Controllers\WhatsAppController;
+use App\Http\Controllers\WhatsApp\WebhookController;
 use App\Livewire\BarDisplay;
 use App\Livewire\CreateOrder;
 use App\Livewire\Dashboard;
+use App\Livewire\FeedbackManagement;
 use App\Livewire\GuestManagement;
 use App\Livewire\GuestOrder;
 use App\Livewire\InventoryManagement;
@@ -18,6 +19,7 @@ use App\Livewire\MenuManagement;
 use App\Livewire\OrderDetails;
 use App\Livewire\OrdersList;
 use App\Livewire\ProcessPayment;
+use App\Livewire\PromotionsManagement;
 use App\Livewire\Reports;
 use App\Livewire\SalesReports;
 use App\Livewire\SettingsManagement;
@@ -30,9 +32,13 @@ use Illuminate\Support\Facades\Route;
 // Guest ordering route (public access via QR code)
 Route::get('/guest/order', GuestOrder::class)->name('guest.order');
 
+// Payment link routes (public access via WhatsApp)
+Route::get('/pay/{token}', [App\Http\Controllers\PaymentLinkController::class, 'show'])->name('payment.link.show');
+Route::post('/pay/{token}', [App\Http\Controllers\PaymentLinkController::class, 'process'])->name('payment.link.process');
+
 // WhatsApp webhook routes (public access for WhatsApp API)
-Route::get('/webhooks/whatsapp', [WhatsAppController::class, 'verify'])->name('whatsapp.verify');
-Route::post('/webhooks/whatsapp', [WhatsAppController::class, 'webhook'])->name('whatsapp.webhook');
+Route::get('/webhooks/whatsapp', [WebhookController::class, 'verify'])->name('whatsapp.verify');
+Route::post('/webhooks/whatsapp', [WebhookController::class, 'handle'])->name('whatsapp.webhook');
 
 // Stripe webhook route (public access for Stripe API, signature verification in controller)
 Route::post('/webhooks/stripe', [App\Http\Controllers\StripeWebhookController::class, 'handle'])->name('stripe.webhook');
@@ -146,6 +152,12 @@ Route::middleware(['auth:web'])->group(function () {
 
     // Guest Management Livewire component route (admin and manager only)
     Route::get('/guests', GuestManagement::class)->middleware(['auth', 'role:manager,admin'])->name('guests');
+
+    // Promotions Management Livewire component route (admin and manager only)
+    Route::get('/promotions', PromotionsManagement::class)->middleware(['auth', 'role:manager,admin'])->name('promotions');
+
+    // Feedback Management Livewire component route (admin and manager only)
+    Route::get('/feedback', FeedbackManagement::class)->middleware(['auth', 'role:manager,admin'])->name('feedback');
 
     // Settings Management Livewire component route (admin and manager only)
     Route::get('/settings', SettingsManagement::class)->middleware(['auth', 'role:admin,manager'])->name('settings');

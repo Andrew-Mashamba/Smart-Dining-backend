@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Models\Order;
 use App\Models\Payment;
+use App\Models\Setting;
 use Exception;
 use Illuminate\Support\Facades\Log;
 use Stripe\PaymentIntent;
@@ -14,7 +15,7 @@ class StripePaymentService
     public function __construct()
     {
         // Set Stripe API key
-        Stripe::setApiKey(config('services.stripe.secret'));
+        Stripe::setApiKey(Setting::get('stripe_secret_key', config('services.stripe.secret')));
     }
 
     /**
@@ -33,7 +34,7 @@ class StripePaymentService
             // Create Stripe PaymentIntent
             $paymentIntent = PaymentIntent::create([
                 'amount' => (int) ($amount * 100), // Convert to cents
-                'currency' => config('services.stripe.currency', 'usd'),
+                'currency' => Setting::get('stripe_currency', config('services.stripe.currency', 'usd')),
                 'metadata' => [
                     'order_id' => $orderId,
                 ],

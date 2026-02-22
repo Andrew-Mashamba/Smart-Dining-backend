@@ -30,10 +30,16 @@ class PaymentReceived implements ShouldBroadcast
      */
     public function broadcastOn(): array
     {
-        return [
+        $channels = [
             new PrivateChannel('orders'),
-            new PrivateChannel('waiter.'.$this->payment->order->waiter_id),
         ];
+
+        $waiterId = $this->payment->order?->waiter_id;
+        if ($waiterId) {
+            $channels[] = new PrivateChannel('waiter.'.$waiterId);
+        }
+
+        return $channels;
     }
 
     /**

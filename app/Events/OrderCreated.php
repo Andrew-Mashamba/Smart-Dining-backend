@@ -30,12 +30,17 @@ class OrderCreated implements ShouldBroadcast
      */
     public function broadcastOn(): array
     {
-        return [
+        $channels = [
             new Channel('orders'),
             new Channel('kitchen'),
             new Channel('bar'),
-            new Channel('waiter.'.$this->order->waiter_id),
         ];
+
+        if ($this->order->waiter_id) {
+            $channels[] = new Channel('waiter.'.$this->order->waiter_id);
+        }
+
+        return $channels;
     }
 
     /**
@@ -45,9 +50,10 @@ class OrderCreated implements ShouldBroadcast
     {
         return [
             'order_id' => $this->order->id,
-            'table' => $this->order->table->name,
+            'table' => $this->order->table?->name,
             'status' => $this->order->status,
             'items_count' => $this->order->orderItems->count(),
+            'source' => $this->order->order_source,
         ];
     }
 }

@@ -14,7 +14,7 @@ class StateManager
      */
     public function getState(Guest $guest): string
     {
-        return Cache::get($this->getStateKey($guest), 'NEW');
+        return Cache::get($this->getStateKey($guest), 'MAIN_MENU');
     }
 
     /**
@@ -60,6 +60,41 @@ class StateManager
     {
         Cache::forget($this->getStateKey($guest));
         Cache::forget($this->getContextKey($guest));
+    }
+
+    /**
+     * Get state by phone number (used by ConversationManager for cache-first reads).
+     */
+    public function getStateByPhone(string $phoneNumber): ?string
+    {
+        return Cache::get("whatsapp:state:{$phoneNumber}");
+    }
+
+    /**
+     * Set state by phone number (used by ConversationManager).
+     */
+    public function setStateByPhone(string $phoneNumber, string $state): void
+    {
+        Cache::put("whatsapp:state:{$phoneNumber}", $state, $this->stateTTL);
+    }
+
+    /**
+     * Update context by phone number (used by ConversationManager).
+     */
+    public function updateContextByPhone(string $phoneNumber, string $key, mixed $value): void
+    {
+        $context = Cache::get("whatsapp:context:{$phoneNumber}", []);
+        $context[$key] = $value;
+        Cache::put("whatsapp:context:{$phoneNumber}", $context, $this->stateTTL);
+    }
+
+    /**
+     * Clear state and context by phone number (used by ConversationManager).
+     */
+    public function clearStateByPhone(string $phoneNumber): void
+    {
+        Cache::forget("whatsapp:state:{$phoneNumber}");
+        Cache::forget("whatsapp:context:{$phoneNumber}");
     }
 
     /**

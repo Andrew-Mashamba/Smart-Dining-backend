@@ -37,6 +37,9 @@ return [
         'order_ready' => env('WHATSAPP_TEMPLATE_ORDER_READY', 'order_ready'),
         'bill_summary' => env('WHATSAPP_TEMPLATE_BILL_SUMMARY', 'bill_summary'),
         'thank_you' => env('WHATSAPP_TEMPLATE_THANK_YOU', 'thank_you'),
+        'reservation_confirmed' => env('WHATSAPP_TEMPLATE_RESERVATION_CONFIRMED', 'reservation_confirmed'),
+        'payment_receipt' => env('WHATSAPP_TEMPLATE_PAYMENT_RECEIPT', 'payment_receipt'),
+        'waiter_requested' => env('WHATSAPP_TEMPLATE_WAITER_REQUESTED', 'waiter_requested'),
     ],
 
     /*
@@ -76,5 +79,32 @@ return [
     */
 
     'log_messages' => env('WHATSAPP_LOG_MESSAGES', true),
+
+    /*
+    |--------------------------------------------------------------------------
+    | Restaurant Info
+    |--------------------------------------------------------------------------
+    |
+    | Restaurant details used for QR codes and messages
+    |
+    */
+
+    'restaurant' => [
+        'phone' => env('WHATSAPP_RESTAURANT_PHONE'),
+        'name' => env('WHATSAPP_RESTAURANT_NAME', 'SeaCliff Restaurant'),
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | QR Code Configuration
+    |--------------------------------------------------------------------------
+    |
+    | Storage and generation settings for QR codes
+    |
+    */
+
+    'qr_code' => [
+        'storage_path' => env('WHATSAPP_QR_STORAGE_PATH', 'qr-codes/tables'),
+    ],
 
 ];

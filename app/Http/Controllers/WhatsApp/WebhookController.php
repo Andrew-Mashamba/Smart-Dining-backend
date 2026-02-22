@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\WhatsApp;
 
 use App\Http\Controllers\Controller;
+use App\Models\Setting;
 use App\Services\WhatsApp\MessageHandler;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
@@ -27,17 +28,27 @@ class WebhookController extends Controller
         $token = $request->query('hub_verify_token');
         $challenge = $request->query('hub_challenge');
 
-        $verifyToken = config('whatsapp.webhook_secret');
+        $verifyToken = Setting::get('whatsapp_webhook_secret', config('whatsapp.webhook_secret'));
+
+        Log::channel('whatsapp')->info('=== WEBHOOK VERIFY REQUEST ===', [
+            'ip' => $request->ip(),
+            'hub_mode' => $mode,
+            'hub_challenge' => $challenge,
+            'token_received' => $token ? substr($token, 0, 4).'****' : '(empty)',
+            'token_expected' => $verifyToken ? substr($verifyToken, 0, 4).'****' : '(empty)',
+            'token_match' => $token === $verifyToken,
+            'all_params' => $request->query(),
+            'headers' => $request->headers->all(),
+        ]);
 
         if ($mode === 'subscribe' && $token === $verifyToken) {
-            Log::info('WhatsApp webhook verified successfully');
+            Log::channel('whatsapp')->info('VERIFY SUCCESS — returning challenge', ['challenge' => $challenge]);
 
             return response($challenge, 200)->header('Content-Type', 'text/plain');
         }
 
-        Log::warning('WhatsApp webhook verification failed', [
-            'mode' => $mode,
-            'token_match' => $token === $verifyToken,
+        Log::channel('whatsapp')->warning('VERIFY FAILED', [
+            'reason' => $mode !== 'subscribe' ? 'mode is not subscribe' : 'token mismatch',
         ]);
 
         return response('Forbidden', 403);
@@ -52,40 +63,112 @@ class WebhookController extends Controller
     {
         try {
             $data = $request->all();
+            $rawBody = $request->getContent();
 
-            Log::info('WhatsApp webhook received', ['data' => $data]);
+            Log::channel('whatsapp')->info('=== WEBHOOK POST RECEIVED ===', [
+                'ip' => $request->ip(),
+                'content_type' => $request->header('Content-Type'),
+                'user_agent' => $request->header('User-Agent'),
+                'raw_body_length' => strlen($rawBody),
+                'raw_body' => $rawBody,
+            ]);
 
-            // Verify webhook signature if needed
-            // $this->verifySignature($request);
+            Log::channel('whatsapp')->info('Parsed payload', ['data' => $data]);
 
             // Check if this is a message event
             if (isset($data['entry']) && is_array($data['entry'])) {
-                foreach ($data['entry'] as $entry) {
+                $entryCount = count($data['entry']);
+                Log::channel('whatsapp')->info("Processing {$entryCount} entries");
+
+                foreach ($data['entry'] as $entryIndex => $entry) {
+                    $entryId = $entry['id'] ?? 'unknown';
+                    Log::channel('whatsapp')->info("Entry [{$entryIndex}]", ['entry_id' => $entryId]);
+
                     if (isset($entry['changes']) && is_array($entry['changes'])) {
-                        foreach ($entry['changes'] as $change) {
-                            if (isset($change['value']['messages']) && is_array($change['value']['messages'])) {
-                                foreach ($change['value']['messages'] as $message) {
-                                    $this->messageHandler->handle($message, $change['value']);
+                        foreach ($entry['changes'] as $changeIndex => $change) {
+                            $field = $change['field'] ?? 'unknown';
+                            Log::channel('whatsapp')->info("Change [{$entryIndex}][{$changeIndex}] field={$field}");
+
+                            $value = $change['value'] ?? [];
+
+                            // Log metadata
+                            if (isset($value['metadata'])) {
+                                Log::channel('whatsapp')->info('Metadata', [
+                                    'display_phone_number' => $value['metadata']['display_phone_number'] ?? null,
+                                    'phone_number_id' => $value['metadata']['phone_number_id'] ?? null,
+                                ]);
+                            }
+
+                            // Log contacts
+                            if (isset($value['contacts'])) {
+                                foreach ($value['contacts'] as $contact) {
+                                    Log::channel('whatsapp')->info('Contact', [
+                                        'wa_id' => $contact['wa_id'] ?? null,
+                                        'name' => $contact['profile']['name'] ?? null,
+                                    ]);
                                 }
                             }
 
+                            // Process messages
+                            if (isset($value['messages']) && is_array($value['messages'])) {
+                                $msgCount = count($value['messages']);
+                                Log::channel('whatsapp')->info("Found {$msgCount} message(s)");
+
+                                foreach ($value['messages'] as $msgIndex => $message) {
+                                    Log::channel('whatsapp')->info(">>> MESSAGE [{$msgIndex}]", [
+                                        'from' => $message['from'] ?? null,
+                                        'type' => $message['type'] ?? null,
+                                        'id' => $message['id'] ?? null,
+                                        'timestamp' => $message['timestamp'] ?? null,
+                                        'text' => $message['text']['body'] ?? null,
+                                        'interactive' => $message['interactive'] ?? null,
+                                        'button' => $message['button'] ?? null,
+                                    ]);
+
+                                    $this->messageHandler->handle($message, $value);
+
+                                    Log::channel('whatsapp')->info("<<< MESSAGE [{$msgIndex}] processed OK");
+                                }
+                            } else {
+                                Log::channel('whatsapp')->info('No messages in this change');
+                            }
+
                             // Handle status updates
-                            if (isset($change['value']['statuses'])) {
-                                Log::info('Message status update', ['statuses' => $change['value']['statuses']]);
+                            if (isset($value['statuses'])) {
+                                foreach ($value['statuses'] as $status) {
+                                    Log::channel('whatsapp')->info('STATUS UPDATE', [
+                                        'message_id' => $status['id'] ?? null,
+                                        'status' => $status['status'] ?? null,
+                                        'timestamp' => $status['timestamp'] ?? null,
+                                        'recipient_id' => $status['recipient_id'] ?? null,
+                                        'errors' => $status['errors'] ?? null,
+                                    ]);
+                                }
+                            }
+
+                            // Handle errors from WhatsApp
+                            if (isset($value['errors'])) {
+                                Log::channel('whatsapp')->error('WHATSAPP ERRORS', ['errors' => $value['errors']]);
                             }
                         }
                     }
                 }
+            } else {
+                Log::channel('whatsapp')->warning('No entry[] in payload — possibly a test ping or unknown format');
             }
+
+            Log::channel('whatsapp')->info('=== WEBHOOK POST COMPLETE — returning 200 ===');
 
             return response()->json(['status' => 'ok']);
         } catch (\Exception $e) {
-            Log::error('WhatsApp webhook error', [
+            Log::channel('whatsapp')->error('=== WEBHOOK ERROR ===', [
                 'error' => $e->getMessage(),
+                'file' => $e->getFile().':'.$e->getLine(),
                 'trace' => $e->getTraceAsString(),
             ]);
 
-            return response()->json(['status' => 'error', 'message' => $e->getMessage()], 500);
+            // Always return 200 to prevent WhatsApp from retrying the webhook
+            return response()->json(['status' => 'ok']);
         }
     }
 
@@ -100,7 +183,7 @@ class WebhookController extends Controller
             throw new \Exception('Missing signature');
         }
 
-        $expectedSignature = 'sha256='.hash_hmac('sha256', $request->getContent(), config('whatsapp.webhook_secret'));
+        $expectedSignature = 'sha256='.hash_hmac('sha256', $request->getContent(), Setting::get('whatsapp_webhook_secret', config('whatsapp.webhook_secret')));
 
         if (! hash_equals($expectedSignature, $signature)) {
             throw new \Exception('Invalid signature');

@@ -23,11 +23,11 @@ class PaymentService
         return [
             'order_id' => $order->id,
             'guest' => [
-                'name' => $order->guest->name,
-                'phone' => $order->guest->phone_number,
+                'name' => $order->guest?->name,
+                'phone' => $order->guest?->phone_number,
             ],
-            'table' => $order->table->name,
-            'waiter' => $order->waiter->name,
+            'table' => $order->table?->name,
+            'waiter' => $order->waiter?->name,
             'items' => $order->items->map(function ($item) {
                 return [
                     'name' => $item->menuItem->name,
@@ -61,7 +61,7 @@ class PaymentService
                 'payment_method' => $paymentData['payment_method'],
                 'status' => 'pending',
                 'transaction_id' => $this->generateTransactionId(),
-                'payment_details' => $paymentData['details'] ?? null,
+                'gateway_response' => $paymentData['details'] ?? null,
             ]);
 
             // Process payment based on method
@@ -72,7 +72,7 @@ class PaymentService
                 case 'card':
                     $this->processCardPayment($payment, $paymentData);
                     break;
-                case 'mobile_money':
+                case 'mobile':
                     $this->processMobileMoneyPayment($payment, $paymentData);
                     break;
                 default:
@@ -118,8 +118,8 @@ class PaymentService
 
         $payment->update([
             'status' => 'refunded',
-            'payment_details' => array_merge(
-                $payment->payment_details ?? [],
+            'gateway_response' => array_merge(
+                $payment->gateway_response ?? [],
                 ['refund_reason' => $reason, 'refunded_at' => now()]
             ),
         ]);
@@ -140,7 +140,7 @@ class PaymentService
         $payment->update([
             'status' => 'completed',
             'completed_at' => now(),
-            'payment_details' => [
+            'gateway_response' => [
                 'tendered' => $data['tendered'] ?? $data['amount'],
                 'change' => ($data['tendered'] ?? $data['amount']) - $data['amount'],
             ],
@@ -169,7 +169,7 @@ class PaymentService
         // In a real implementation, this would integrate with M-Pesa/Tigopesa API
         // For now, we'll keep as pending until confirmed
         $payment->update([
-            'payment_details' => [
+            'gateway_response' => [
                 'phone_number' => $data['phone_number'] ?? null,
                 'provider' => $data['provider'] ?? 'mpesa',
             ],

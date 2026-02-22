@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Web;
 
 use App\Http\Controllers\Controller;
 use App\Models\Order;
+use App\Models\Setting;
 use App\Services\Payment\StripePaymentService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
@@ -42,7 +43,7 @@ class StripePaymentWebController extends Controller
                 'clientSecret' => $result['client_secret'],
                 'paymentIntentId' => $result['payment_intent_id'],
                 'amount' => $remainingBalance,
-                'stripePublicKey' => config('services.stripe.public_key'),
+                'stripePublicKey' => Setting::get('stripe_public_key', config('services.stripe.public_key')),
             ]);
         } catch (\Exception $e) {
             Log::error('Failed to load Stripe payment form', [

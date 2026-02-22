@@ -2,6 +2,7 @@
 
 namespace App\Services\WhatsApp;
 
+use App\Models\Setting;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 
@@ -15,9 +16,9 @@ class WhatsAppService
 
     public function __construct()
     {
-        $this->apiUrl = config('whatsapp.api_url');
-        $this->accessToken = config('whatsapp.access_token');
-        $this->phoneNumberId = config('whatsapp.phone_number_id');
+        $this->apiUrl = Setting::get('whatsapp_api_url', config('whatsapp.api_url'));
+        $this->accessToken = Setting::get('whatsapp_access_token', config('whatsapp.access_token')) ?? '';
+        $this->phoneNumberId = Setting::get('whatsapp_phone_number_id', config('whatsapp.phone_number_id')) ?? '';
     }
 
     /**
@@ -165,6 +166,70 @@ class WhatsAppService
     }
 
     /**
+     * Send an image message
+     */
+    public function sendImageMessage(string $to, string $imageUrl, string $caption = ''): array
+    {
+        $url = "{$this->apiUrl}/{$this->phoneNumberId}/messages";
+
+        $imageData = [
+            'link' => $imageUrl,
+        ];
+
+        if ($caption) {
+            $imageData['caption'] = $caption;
+        }
+
+        $response = Http::withToken($this->accessToken)
+            ->post($url, [
+                'messaging_product' => 'whatsapp',
+                'recipient_type' => 'individual',
+                'to' => $to,
+                'type' => 'image',
+                'image' => $imageData,
+            ]);
+
+        Log::info('WhatsApp image message sent', [
+            'to' => $to,
+            'status' => $response->status(),
+        ]);
+
+        return $response->json();
+    }
+
+    /**
+     * Send a document message (PDF, etc.)
+     */
+    public function sendDocumentMessage(string $to, string $documentUrl, string $caption = '', string $filename = ''): array
+    {
+        $url = "{$this->apiUrl}/{$this->phoneNumberId}/messages";
+
+        $docData = ['link' => $documentUrl];
+        if ($caption) {
+            $docData['caption'] = $caption;
+        }
+        if ($filename) {
+            $docData['filename'] = $filename;
+        }
+
+        $response = Http::withToken($this->accessToken)
+            ->post($url, [
+                'messaging_product' => 'whatsapp',
+                'recipient_type' => 'individual',
+                'to' => $to,
+                'type' => 'document',
+                'document' => $docData,
+            ]);
+
+        Log::info('WhatsApp document message sent', [
+            'to' => $to,
+            'status' => $response->status(),
+        ]);
+
+        return $response->json();
+    }
+
+    /**
      * Mark a message as read
      */
     public function markAsRead(string $messageId): array
@@ -179,5 +244,29 @@ class WhatsAppService
             ]);
 
         return $response->json();
+    }
+
+    /**
+     * Send typing indicator to show "typing..." in the guest's chat.
+     * Lasts up to 25 seconds. Call before starting AI processing
+     * so the guest sees immediate feedback while waiting.
+     */
+    public function sendTypingIndicator(string $to): void
+    {
+        $url = "{$this->apiUrl}/{$this->phoneNumberId}/messages";
+
+        try {
+            Http::withToken($this->accessToken)
+                ->post($url, [
+                    'messaging_product' => 'whatsapp',
+                    'recipient_type' => 'individual',
+                    'to' => $to,
+                    'type' => 'reaction',
+                    'status' => 'typing',
+                ]);
+        } catch (\Exception $e) {
+            // Non-fatal — don't break the flow if typing indicator fails
+            Log::debug('Typing indicator failed', ['to' => $to, 'error' => $e->getMessage()]);
+        }
     }
 }

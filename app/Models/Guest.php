@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasManyThrough;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class Guest extends Model
 {
@@ -21,6 +22,8 @@ class Guest extends Model
         'name',
         'loyalty_points',
         'preferences',
+        'first_visit_at',
+        'last_visit_at',
     ];
 
     /**
@@ -31,6 +34,8 @@ class Guest extends Model
     protected $casts = [
         'preferences' => 'array',
         'loyalty_points' => 'integer',
+        'first_visit_at' => 'datetime',
+        'last_visit_at' => 'datetime',
     ];
 
     /**
@@ -71,6 +76,38 @@ class Guest extends Model
     public function activeSession()
     {
         return $this->sessions()->where('status', 'active')->latest()->first();
+    }
+
+    /**
+     * Get the WhatsApp session for the guest.
+     */
+    public function whatsappSession(): HasOne
+    {
+        return $this->hasOne(WhatsAppSession::class);
+    }
+
+    /**
+     * Get all reservations for the guest.
+     */
+    public function reservations(): HasMany
+    {
+        return $this->hasMany(Reservation::class);
+    }
+
+    /**
+     * Get conversation history for the guest.
+     */
+    public function conversations(): HasMany
+    {
+        return $this->hasMany(GuestConversation::class);
+    }
+
+    /**
+     * Get all feedback for the guest.
+     */
+    public function feedback(): HasMany
+    {
+        return $this->hasMany(Feedback::class);
     }
 
     /**

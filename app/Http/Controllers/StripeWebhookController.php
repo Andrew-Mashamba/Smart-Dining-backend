@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Setting;
 use App\Services\Payment\StripePaymentService;
 use Exception;
 use Illuminate\Http\Request;
@@ -27,7 +28,7 @@ class StripeWebhookController extends Controller
     {
         $payload = $request->getContent();
         $sigHeader = $request->header('Stripe-Signature');
-        $webhookSecret = config('services.stripe.webhook_secret');
+        $webhookSecret = Setting::get('stripe_webhook_secret', config('services.stripe.webhook_secret'));
 
         try {
             // Verify webhook signature

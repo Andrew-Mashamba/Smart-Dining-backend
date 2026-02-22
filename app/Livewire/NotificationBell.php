@@ -73,7 +73,10 @@ class NotificationBell extends Component
         $notifications = Auth::user()
             ->notifications()
             ->whereNull('read_at')
-            ->where('data->type', 'low_stock')
+            ->where(function ($query) {
+                $query->where('data->type', 'low_stock')
+                      ->orWhere('data->source', 'ai_chatbot');
+            })
             ->latest()
             ->take(10)
             ->get();

@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\DeviceTokenController;
+use App\Http\Controllers\Api\StaffNotificationController;
 use App\Http\Controllers\Api\GuestController;
 use App\Http\Controllers\Api\MenuController;
 use App\Http\Controllers\Api\OrderController;
@@ -39,6 +40,12 @@ Route::middleware('auth:sanctum')->group(function () {
     // FCM device token registration (all authenticated staff)
     Route::post('device-tokens', [DeviceTokenController::class, 'store']);
     Route::delete('device-tokens', [DeviceTokenController::class, 'destroy']);
+
+    // Staff notifications
+    Route::get('notifications', [StaffNotificationController::class, 'index']);
+    Route::get('notifications/unread-count', [StaffNotificationController::class, 'unreadCount']);
+    Route::post('notifications/{id}/read', [StaffNotificationController::class, 'markAsRead']);
+    Route::post('notifications/read-all', [StaffNotificationController::class, 'markAllAsRead']);
 
     // Waiter routes: can add items to orders, mark served, etc.
     Route::middleware(['api.role:waiter,manager,admin'])->group(function () {
@@ -89,6 +96,15 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('payments', [PaymentController::class, 'index']);
     Route::get('payments/{id}', [PaymentController::class, 'show']);
 
+    // Reservations (waiter, manager, admin)
+    Route::middleware(['api.role:waiter,manager,admin'])->prefix('reservations')->group(function () {
+        Route::get('/', [App\Http\Controllers\Api\ReservationController::class, 'index']);
+        Route::post('/', [App\Http\Controllers\Api\ReservationController::class, 'store']);
+        Route::get('/available-slots', [App\Http\Controllers\Api\ReservationController::class, 'availableSlots']);
+        Route::get('/{id}', [App\Http\Controllers\Api\ReservationController::class, 'show']);
+        Route::patch('/{id}/status', [App\Http\Controllers\Api\ReservationController::class, 'updateStatus']);
+    });
+
     // Manager and Admin only routes
     Route::middleware(['api.role:manager,admin'])->group(function () {
         // Staff PIN management (managers set PINs for staff)
@@ -102,6 +118,13 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('qr-codes/tables/{tableId}', [App\Http\Controllers\WhatsApp\QRCodeController::class, 'show']);
         Route::post('qr-codes/tables/{tableId}/generate', [App\Http\Controllers\WhatsApp\QRCodeController::class, 'generate']);
         Route::post('qr-codes/generate-all', [App\Http\Controllers\WhatsApp\QRCodeController::class, 'generateAll']);
+
+        // WhatsApp messaging (push messages to guests from POS/dashboard)
+        Route::prefix('whatsapp')->group(function () {
+            Route::post('send-menu', [App\Http\Controllers\Api\WhatsAppApiController::class, 'sendMenu']);
+            Route::post('send-bill', [App\Http\Controllers\Api\WhatsAppApiController::class, 'sendBill']);
+            Route::post('send-receipt', [App\Http\Controllers\Api\WhatsAppApiController::class, 'sendReceipt']);
+        });
     });
 });
 
@@ -112,6 +135,9 @@ Route::prefix('webhooks')->group(function () {
 
     // Stripe webhook (signature verification handled in controller)
     Route::post('stripe', [App\Http\Controllers\StripeWebhookController::class, 'handle']);
+
+    // M-Pesa webhook (callback from Safaricom)
+    Route::post('mpesa', [App\Http\Controllers\Api\MpesaWebhookController::class, 'handle']);
 });
 
 // Test error handling routes for API (development only - should be removed in production)

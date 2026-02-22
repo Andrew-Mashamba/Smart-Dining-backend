@@ -3,41 +3,41 @@
 namespace App\Services\WhatsApp;
 
 use App\Models\Guest;
-use App\Models\MenuItem;
 use App\Models\Table;
-use App\Services\GuestSession\SessionService;
-use App\Services\Menu\MenuService;
-use App\Services\OrderManagement\OrderService;
 use Illuminate\Support\Facades\Log;
 
 class FlowManager
 {
     protected WhatsAppService $whatsappService;
 
-    protected StateManager $stateManager;
+    protected ConversationManager $conversationManager;
 
-    protected MenuService $menuService;
+    protected MenuBot $menuBot;
 
-    protected SessionService $sessionService;
+    protected ReservationBot $reservationBot;
 
-    protected OrderService $orderService;
+    protected NotificationBot $notificationBot;
+
+    protected PaymentBot $paymentBot;
 
     public function __construct(
         WhatsAppService $whatsappService,
-        StateManager $stateManager,
-        MenuService $menuService,
-        SessionService $sessionService,
-        OrderService $orderService
+        ConversationManager $conversationManager,
+        MenuBot $menuBot,
+        ReservationBot $reservationBot,
+        NotificationBot $notificationBot,
+        PaymentBot $paymentBot
     ) {
         $this->whatsappService = $whatsappService;
-        $this->stateManager = $stateManager;
-        $this->menuService = $menuService;
-        $this->sessionService = $sessionService;
-        $this->orderService = $orderService;
+        $this->conversationManager = $conversationManager;
+        $this->menuBot = $menuBot;
+        $this->reservationBot = $reservationBot;
+        $this->notificationBot = $notificationBot;
+        $this->paymentBot = $paymentBot;
     }
 
     /**
-     * Process incoming message based on current state
+     * Process incoming message based on current state.
      */
     public function processMessage(Guest $guest, string $state, array $messageData): void
     {
@@ -48,14 +48,72 @@ class FlowManager
         ]);
 
         try {
+            $text = strtolower(trim($messageData['text'] ?? ''));
+
+            // Global reset keywords — always return to main menu
+            if (in_array($text, ['menu', 'home', 'start', '0'])) {
+                $this->conversationManager->setState($guest->phone_number, 'MAIN_MENU');
+                $this->sendMainMenu($guest);
+
+                return;
+            }
+
+            // Global cancel — always returns to main menu
+            if ($text === 'cancel' && $state !== 'MAIN_MENU') {
+                $this->conversationManager->setState($guest->phone_number, 'MAIN_MENU');
+                $this->sendMainMenu($guest);
+
+                return;
+            }
+
+            // Step-back navigation — go to the previous logical step
+            if ($text === 'back' && $state !== 'MAIN_MENU') {
+                $previousState = $this->getPreviousState($state);
+                $this->conversationManager->setState($guest->phone_number, $previousState);
+
+                if ($previousState === 'MAIN_MENU') {
+                    $this->sendMainMenu($guest);
+                } else {
+                    // Re-enter the previous state's entry point
+                    $this->processMessage($guest, $previousState, ['type' => 'text', 'text' => '']);
+                }
+
+                return;
+            }
+
+            // Route based on current state
             match ($state) {
-                'NEW' => $this->handleNewGuest($guest, $messageData),
-                'MENU_BROWSING' => $this->handleMenuBrowsing($guest, $messageData),
-                'ORDERING' => $this->handleOrdering($guest, $messageData),
-                'ORDER_PLACED' => $this->handleOrderPlaced($guest, $messageData),
-                'DINING' => $this->handleDining($guest, $messageData),
-                'BILLING' => $this->handleBilling($guest, $messageData),
-                default => $this->handleUnknownState($guest, $messageData),
+                'MAIN_MENU', 'NEW' => $this->handleMainMenu($guest, $messageData),
+
+                // Reservation states
+                'RESERVATION_GUESTS', 'RESERVATION_DATE', 'RESERVATION_TIME',
+                'RESERVATION_LOCATION', 'RESERVATION_NAME', 'RESERVATION_CONFIRM'
+                    => $this->reservationBot->handleState($guest, $state, $messageData),
+
+                // Order states
+                'ORDER_TABLE', 'ORDER_CATEGORY', 'ORDER_ITEMS', 'ORDER_QUANTITY',
+                'ORDER_SPECIAL', 'ORDER_CART', 'ORDER_CONFIRM'
+                    => $this->menuBot->handleState($guest, $state, $messageData),
+
+                // Legacy order states (backward compat)
+                'MENU_BROWSING' => $this->menuBot->handleState($guest, 'ORDER_CATEGORY', $messageData),
+                'ORDERING' => $this->menuBot->handleState($guest, 'ORDER_ITEMS', $messageData),
+
+                // Current order viewing
+                'CURRENT_ORDER' => $this->menuBot->showCurrentOrder($guest, $messageData),
+
+                // Notification states
+                'NOTIFICATION_TABLE' => $this->notificationBot->handleState($guest, $state, $messageData),
+
+                // Payment states
+                'PAYMENT_METHOD', 'PAYMENT_MPESA', 'PAYMENT_PROCESSING'
+                    => $this->paymentBot->handleState($guest, $state, $messageData),
+
+                // Legacy states
+                'ORDER_PLACED' => $this->menuBot->handleOrderPlaced($guest, $messageData),
+                'DINING' => $this->menuBot->handleDining($guest, $messageData),
+
+                default => $this->sendMainMenu($guest),
             };
         } catch (\Exception $e) {
             Log::error('Flow processing error', [
@@ -66,244 +124,133 @@ class FlowManager
 
             $this->whatsappService->sendTextMessage(
                 $guest->phone_number,
-                'Sorry, something went wrong. Please try again or contact our staff.'
+                "Sorry, something went wrong. Let's start over."
             );
+
+            $this->conversationManager->setState($guest->phone_number, 'MAIN_MENU');
+            $this->sendMainMenu($guest);
         }
     }
 
     /**
-     * Handle new guest (first interaction)
+     * Handle main menu selections.
      */
-    protected function handleNewGuest(Guest $guest, array $messageData): void
-    {
-        // Check if message contains table code
-        $text = $messageData['text'] ?? '';
-
-        if (preg_match('/TABLE[_\s]?(\d+)/i', $text, $matches)) {
-            $tableNumber = $matches[1];
-            $table = Table::where('name', 'LIKE', "%{$tableNumber}%")->first();
-
-            if ($table) {
-                // Create session
-                $session = $this->sessionService->startSession($guest, $table);
-
-                $this->stateManager->updateContext($guest, 'session_id', $session->id);
-                $this->stateManager->updateContext($guest, 'table_id', $table->id);
-
-                // Send welcome message
-                $welcomeMessage = $guest->wasRecentlyCreated
-                    ? "Welcome to Sea Cliff! 🌊\n\nYou're seated at {$table->name}. Let's get started!"
-                    : "Welcome back {$guest->name}! 🎉\n\nYou're at {$table->name}. Ready to order?";
-
-                $this->whatsappService->sendButtonMessage(
-                    $guest->phone_number,
-                    $welcomeMessage,
-                    [
-                        ['id' => 'view_menu', 'title' => 'View Menu'],
-                        ['id' => 'call_waiter', 'title' => 'Call Waiter'],
-                    ]
-                );
-
-                $this->stateManager->setState($guest, 'MENU_BROWSING');
-
-                return;
-            }
-        }
-
-        // Invalid table code
-        $this->whatsappService->sendTextMessage(
-            $guest->phone_number,
-            "Welcome to Sea Cliff! 🌊\n\nPlease scan the QR code on your table to get started."
-        );
-    }
-
-    /**
-     * Handle menu browsing state
-     */
-    protected function handleMenuBrowsing(Guest $guest, array $messageData): void
+    protected function handleMainMenu(Guest $guest, array $messageData): void
     {
         $buttonId = $messageData['button_id'] ?? null;
         $listId = $messageData['list_id'] ?? null;
-        $text = strtolower($messageData['text'] ?? '');
+        $text = strtolower(trim($messageData['text'] ?? ''));
 
-        if ($buttonId === 'view_menu' || $text === 'menu') {
-            $this->sendMenuCategories($guest);
-        } elseif ($buttonId === 'call_waiter') {
-            $this->whatsappService->sendTextMessage(
-                $guest->phone_number,
-                'A waiter will be with you shortly! 👨‍🍳'
-            );
-        } elseif ($listId) {
-            // Handle category selection
-            $this->sendCategoryItems($guest, $listId);
-        } else {
-            $this->whatsappService->sendTextMessage(
-                $guest->phone_number,
-                'Please select an option from the menu.'
-            );
-        }
+        $selection = $listId ?? $buttonId ?? $text;
+
+        match ($selection) {
+            '1', 'reservation', 'reserve', 'book', 'main_reservation'
+                => $this->reservationBot->start($guest),
+            '2', 'order', 'food', 'main_menu'
+                => $this->menuBot->start($guest),
+            '3', 'my order', 'status', 'current order', 'main_order'
+                => $this->menuBot->showCurrentOrder($guest, $messageData),
+            '4', 'waiter', 'ring', 'main_waiter'
+                => $this->notificationBot->ringWaiter($guest),
+            '5', 'manager', 'main_manager'
+                => $this->notificationBot->requestManager($guest),
+            '6', 'pay', 'bill', 'payment', 'main_pay'
+                => $this->paymentBot->start($guest),
+            '7', 'table', 'info', 'table info', 'main_table'
+                => $this->showTableInfo($guest),
+            'hi', 'hello', 'hey'
+                => $this->sendMainMenu($guest),
+            default => $this->sendMainMenu($guest),
+        };
     }
 
     /**
-     * Send menu categories as interactive list
+     * Send the 7-option main menu.
      */
-    protected function sendMenuCategories(Guest $guest): void
+    public function sendMainMenu(Guest $guest): void
     {
-        $menuByCategory = $this->menuService->getMenuByCategory();
-
-        $sections = [];
-        foreach ($menuByCategory as $category) {
-            $rows = [];
-            foreach ($category['items'] as $item) {
-                $rows[] = [
-                    'id' => 'item_'.$item['id'],
-                    'title' => $item['name'],
-                    'description' => 'TZS '.number_format($item['price'], 0),
-                ];
-
-                if (count($rows) >= 10) {
-                    break;
-                } // WhatsApp limit per section
-            }
-
-            if (! empty($rows)) {
-                $sections[] = [
-                    'title' => ucfirst($category['category']),
-                    'rows' => $rows,
-                ];
-            }
-        }
+        $name = $guest->name ?? 'there';
 
         $this->whatsappService->sendListMessage(
             $guest->phone_number,
-            "Here's our menu today! 📋\n\nTap below to browse by category.",
-            'View Menu',
-            $sections
-        );
-
-        $this->stateManager->setState($guest, 'ORDERING');
-    }
-
-    /**
-     * Handle ordering state
-     */
-    protected function handleOrdering(Guest $guest, array $messageData): void
-    {
-        $listId = $messageData['list_id'] ?? null;
-
-        if ($listId && strpos($listId, 'item_') === 0) {
-            $itemId = str_replace('item_', '', $listId);
-            $this->addItemToCart($guest, $itemId);
-        }
-    }
-
-    /**
-     * Add item to guest's cart
-     */
-    protected function addItemToCart(Guest $guest, int $itemId): void
-    {
-        $context = $this->stateManager->getContext($guest);
-        $cart = $context['cart'] ?? [];
-
-        $cart[$itemId] = ($cart[$itemId] ?? 0) + 1;
-
-        $this->stateManager->updateContext($guest, 'cart', $cart);
-
-        $menuItem = MenuItem::find($itemId);
-
-        $this->whatsappService->sendButtonMessage(
-            $guest->phone_number,
-            "Added {$menuItem->name} to your order! 🛒\n\nWhat would you like to do next?",
+            "Welcome to SeaCliff, {$name}! What would you like to do?",
+            'Main Menu',
             [
-                ['id' => 'add_more', 'title' => 'Add More Items'],
-                ['id' => 'place_order', 'title' => 'Place Order'],
-                ['id' => 'view_cart', 'title' => 'View Cart'],
+                [
+                    'title' => 'Services',
+                    'rows' => [
+                        ['id' => 'main_reservation', 'title' => 'Make a Reservation', 'description' => 'Reserve a table for dining'],
+                        ['id' => 'main_menu', 'title' => 'View Menu & Order', 'description' => 'Browse menu and place an order'],
+                        ['id' => 'main_order', 'title' => 'My Current Order', 'description' => 'Check your order status'],
+                        ['id' => 'main_pay', 'title' => 'Pay My Bill', 'description' => 'View and pay your bill'],
+                    ],
+                ],
+                [
+                    'title' => 'Assistance',
+                    'rows' => [
+                        ['id' => 'main_waiter', 'title' => 'Request Waiter', 'description' => 'Call a waiter to your table'],
+                        ['id' => 'main_manager', 'title' => 'Request Manager', 'description' => 'Speak with a manager'],
+                        ['id' => 'main_table', 'title' => 'Table Info', 'description' => 'View your table details'],
+                    ],
+                ],
             ]
         );
     }
 
     /**
-     * Handle order placed state
+     * Get the previous state for step-back navigation.
      */
-    protected function handleOrderPlaced(Guest $guest, array $messageData): void
+    protected function getPreviousState(string $currentState): string
     {
-        $this->whatsappService->sendTextMessage(
-            $guest->phone_number,
-            "Your order is being prepared! 👨‍🍳\n\nWe'll notify you when it's ready."
-        );
+        $backMap = [
+            // Reservation flow
+            'RESERVATION_GUESTS' => 'MAIN_MENU',
+            'RESERVATION_DATE' => 'RESERVATION_GUESTS',
+            'RESERVATION_TIME' => 'RESERVATION_DATE',
+            'RESERVATION_LOCATION' => 'RESERVATION_TIME',
+            'RESERVATION_NAME' => 'RESERVATION_LOCATION',
+            'RESERVATION_CONFIRM' => 'RESERVATION_LOCATION',
+
+            // Order flow
+            'ORDER_TABLE' => 'MAIN_MENU',
+            'ORDER_CATEGORY' => 'MAIN_MENU',
+            'ORDER_ITEMS' => 'MAIN_MENU',
+            'ORDER_QUANTITY' => 'ORDER_ITEMS',
+            'ORDER_SPECIAL' => 'ORDER_QUANTITY',
+            'ORDER_CART' => 'ORDER_ITEMS',
+            'ORDER_CONFIRM' => 'ORDER_CART',
+
+            // Payment flow
+            'PAYMENT_METHOD' => 'MAIN_MENU',
+            'PAYMENT_MPESA' => 'PAYMENT_METHOD',
+            'PAYMENT_PROCESSING' => 'PAYMENT_METHOD',
+
+            // Notification
+            'NOTIFICATION_TABLE' => 'MAIN_MENU',
+        ];
+
+        return $backMap[$currentState] ?? 'MAIN_MENU';
     }
 
     /**
-     * Handle dining state
+     * Show table info for the current session.
      */
-    protected function handleDining(Guest $guest, array $messageData): void
+    protected function showTableInfo(Guest $guest): void
     {
-        $text = strtolower($messageData['text'] ?? '');
+        $session = $this->conversationManager->getSession($guest->phone_number);
 
-        if (str_contains($text, 'bill') || str_contains($text, 'pay')) {
-            $this->stateManager->setState($guest, 'BILLING');
-            $this->sendBill($guest);
-        } else {
-            $this->whatsappService->sendButtonMessage(
+        if ($session->current_table_id) {
+            $table = Table::find($session->current_table_id);
+            $this->whatsappService->sendTextMessage(
                 $guest->phone_number,
-                'Enjoying your meal? 😊',
-                [
-                    ['id' => 'request_bill', 'title' => 'Request Bill'],
-                    ['id' => 'order_more', 'title' => 'Order More'],
-                ]
+                "Your Table: {$table->name}\nLocation: ".ucfirst($table->location)."\nCapacity: {$table->capacity} seats\nStatus: ".ucfirst($table->status)
             );
+        } else {
+            $this->whatsappService->sendTextMessage(
+                $guest->phone_number,
+                "You're not currently assigned to a table.\n\nPlease scan the QR code on your table or enter your table number (e.g., Table 1)."
+            );
+            $this->conversationManager->setState($guest->phone_number, 'ORDER_TABLE');
         }
-    }
-
-    /**
-     * Handle billing state
-     */
-    protected function handleBilling(Guest $guest, array $messageData): void
-    {
-        $this->whatsappService->sendTextMessage(
-            $guest->phone_number,
-            'Your bill is ready! Your waiter will assist you with payment.'
-        );
-    }
-
-    /**
-     * Send bill to guest
-     */
-    protected function sendBill(Guest $guest): void
-    {
-        // Get active session and orders
-        $session = $this->sessionService->getActiveSession($guest);
-
-        if ($session) {
-            $summary = $this->sessionService->getSessionSummary($session);
-
-            $billText = "📄 Your Bill\n\n";
-            foreach ($summary['orders'] as $order) {
-                $billText .= "Order #{$order['order_id']}: TZS ".number_format($order['total_amount'], 0)."\n";
-            }
-            $billText .= "\nTotal: TZS ".number_format($summary['financial_summary']['total_spent'], 0);
-
-            $this->whatsappService->sendTextMessage($guest->phone_number, $billText);
-        }
-    }
-
-    /**
-     * Handle unknown state
-     */
-    protected function handleUnknownState(Guest $guest, array $messageData): void
-    {
-        $this->whatsappService->sendTextMessage(
-            $guest->phone_number,
-            "I'm not sure what you mean. Type 'help' for assistance."
-        );
-    }
-
-    /**
-     * Send category items
-     */
-    protected function sendCategoryItems(Guest $guest, string $categoryId): void
-    {
-        // Implementation for sending items in a specific category
-        $this->sendMenuCategories($guest);
     }
 }

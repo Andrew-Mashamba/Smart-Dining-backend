@@ -2,6 +2,7 @@
 
 namespace App\Services\Menu;
 
+use App\Models\MenuCategory;
 use App\Models\MenuItem;
 use Illuminate\Support\Collection;
 
@@ -12,10 +13,10 @@ class MenuService
      */
     public function getAvailableMenu(array $filters = []): Collection
     {
-        $query = MenuItem::where('is_available', true);
+        $query = MenuItem::where('status', 'available');
 
         if (isset($filters['category'])) {
-            $query->where('category', $filters['category']);
+            $query->where('category_id', $filters['category']);
         }
 
         if (isset($filters['prep_area'])) {
@@ -30,7 +31,7 @@ class MenuService
             $query->where('price', '>=', $filters['min_price']);
         }
 
-        return $query->orderBy('category')
+        return $query->orderBy('category_id')
             ->orderBy('name')
             ->get();
     }
@@ -38,10 +39,10 @@ class MenuService
     /**
      * Get menu items by category
      */
-    public function getItemsByCategory(string $category): Collection
+    public function getItemsByCategory(int $categoryId): Collection
     {
-        return MenuItem::where('category', $category)
-            ->where('is_available', true)
+        return MenuItem::where('category_id', $categoryId)
+            ->where('status', 'available')
             ->orderBy('name')
             ->get();
     }
@@ -52,8 +53,8 @@ class MenuService
     public function getItemsByPrepArea(string $prepArea): Collection
     {
         return MenuItem::where('prep_area', $prepArea)
-            ->where('is_available', true)
-            ->orderBy('category')
+            ->where('status', 'available')
+            ->orderBy('category_id')
             ->orderBy('name')
             ->get();
     }
@@ -63,7 +64,7 @@ class MenuService
      */
     public function updateAvailability(MenuItem $item, bool $available): void
     {
-        $item->update(['is_available' => $available]);
+        $item->update(['status' => $available ? 'available' : 'unavailable']);
 
         \Log::info('Menu item availability updated', [
             'item_id' => $item->id,
@@ -77,16 +78,18 @@ class MenuService
      */
     public function getMenuByCategory(): array
     {
-        $items = MenuItem::where('is_available', true)
-            ->orderBy('category')
+        $categories = MenuCategory::where('status', 'active')
+            ->with(['menuItems' => function ($query) {
+                $query->where('status', 'available')->orderBy('name');
+            }])
             ->orderBy('name')
             ->get();
 
-        return $items->groupBy('category')
-            ->map(function ($categoryItems, $category) {
+        return $categories->filter(fn ($cat) => $cat->menuItems->isNotEmpty())
+            ->map(function ($category) {
                 return [
-                    'category' => $category,
-                    'items' => $categoryItems->map(function ($item) {
+                    'category' => $category->name,
+                    'items' => $category->menuItems->map(function ($item) {
                         return [
                             'id' => $item->id,
                             'name' => $item->name,
@@ -107,10 +110,10 @@ class MenuService
      */
     public function searchMenu(string $searchTerm): Collection
     {
-        return MenuItem::where('is_available', true)
+        return MenuItem::where('status', 'available')
             ->where(function ($query) use ($searchTerm) {
-                $query->where('name', 'ILIKE', "%{$searchTerm}%")
-                    ->orWhere('description', 'ILIKE', "%{$searchTerm}%");
+                $query->where('name', 'LIKE', "%{$searchTerm}%")
+                    ->orWhere('description', 'LIKE', "%{$searchTerm}%");
             })
             ->orderBy('name')
             ->get();
@@ -129,7 +132,7 @@ class MenuService
      */
     public function getPopularItems(int $limit = 10): Collection
     {
-        return MenuItem::where('is_available', true)
+        return MenuItem::where('status', 'available')
             ->withCount('orderItems')
             ->orderBy('order_items_count', 'desc')
             ->limit($limit)
@@ -142,7 +145,7 @@ class MenuService
     public function bulkUpdateAvailability(array $itemIds, bool $available): int
     {
         return MenuItem::whereIn('id', $itemIds)
-            ->update(['is_available' => $available]);
+            ->update(['status' => $available ? 'available' : 'unavailable']);
     }
 
     /**
@@ -151,10 +154,11 @@ class MenuService
     public function getMenuStats(): array
     {
         $total = MenuItem::count();
-        $available = MenuItem::where('is_available', true)->count();
-        $byCategory = MenuItem::select('category')
+        $available = MenuItem::where('status', 'available')->count();
+        $byCategory = MenuItem::join('menu_categories', 'menu_items.category_id', '=', 'menu_categories.id')
+            ->select('menu_categories.name as category')
             ->selectRaw('count(*) as count')
-            ->groupBy('category')
+            ->groupBy('menu_categories.name')
             ->pluck('count', 'category')
             ->toArray();
 

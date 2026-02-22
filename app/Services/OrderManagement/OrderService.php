@@ -23,11 +23,9 @@ class OrderService
             $order = Order::create([
                 'guest_id' => $data['guest_id'],
                 'table_id' => $data['table_id'],
-                'waiter_id' => $data['waiter_id'],
-                'session_id' => $data['session_id'] ?? null,
+                'waiter_id' => $data['waiter_id'] ?? null,
                 'order_source' => $data['order_source'] ?? 'pos',
                 'status' => 'pending',
-                'notes' => $data['notes'] ?? null,
                 'special_instructions' => $data['special_instructions'] ?? null,
                 'subtotal' => 0,
                 'tax' => 0,
@@ -178,11 +176,11 @@ class OrderService
         return [
             'order_id' => $order->id,
             'guest' => [
-                'name' => $order->guest->name,
-                'phone' => $order->guest->phone_number,
+                'name' => $order->guest?->name,
+                'phone' => $order->guest?->phone_number,
             ],
-            'table' => $order->table->name,
-            'waiter' => $order->waiter->name,
+            'table' => $order->table?->name,
+            'waiter' => $order->waiter?->name,
             'status' => $order->status,
             'items' => $order->items->map(function ($item) {
                 return [
@@ -190,15 +188,14 @@ class OrderService
                     'quantity' => $item->quantity,
                     'unit_price' => $item->unit_price,
                     'subtotal' => $item->subtotal,
-                    'status' => $item->status,
+                    'prep_status' => $item->prep_status,
                     'special_instructions' => $item->special_instructions,
                 ];
             }),
             'totals' => [
                 'subtotal' => $order->subtotal,
                 'tax' => $order->tax,
-                'service_charge' => $order->service_charge,
-                'total_amount' => $order->total_amount,
+                'total' => $order->total,
             ],
             'created_at' => $order->created_at,
         ];

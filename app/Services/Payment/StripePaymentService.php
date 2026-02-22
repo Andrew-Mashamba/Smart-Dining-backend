@@ -4,6 +4,7 @@ namespace App\Services\Payment;
 
 use App\Models\Order;
 use App\Models\Payment;
+use App\Models\Setting;
 use Illuminate\Support\Facades\Log;
 use Stripe\Exception\ApiErrorException;
 use Stripe\StripeClient;
@@ -14,7 +15,7 @@ class StripePaymentService
 
     public function __construct()
     {
-        $this->stripe = new StripeClient(config('services.stripe.secret'));
+        $this->stripe = new StripeClient(Setting::get('stripe_secret_key', config('services.stripe.secret')));
     }
 
     /**
@@ -30,7 +31,7 @@ class StripePaymentService
             // Create PaymentIntent
             $paymentIntent = $this->stripe->paymentIntents->create([
                 'amount' => $this->convertToSmallestUnit($amount),
-                'currency' => config('services.stripe.currency', 'usd'),
+                'currency' => Setting::get('stripe_currency', config('services.stripe.currency', 'usd')),
                 'metadata' => [
                     'order_id' => $orderId,
                     'order_number' => $order->order_number ?? "ORDER-{$orderId}",

@@ -23,11 +23,15 @@ class Order extends Model
         'guest_id',
         'waiter_id',
         'order_source',
+        'order_type',
         'status',
         'subtotal',
         'tax',
         'total',
         'special_instructions',
+        'delivery_address',
+        'delivery_phone',
+        'estimated_ready_at',
     ];
 
     /**
@@ -39,6 +43,7 @@ class Order extends Model
         'subtotal' => 'decimal:2',
         'tax' => 'decimal:2',
         'total' => 'decimal:2',
+        'estimated_ready_at' => 'datetime',
     ];
 
     /**

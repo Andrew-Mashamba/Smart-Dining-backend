@@ -2,6 +2,7 @@
 
 namespace App\Services\WhatsApp;
 
+use App\Models\Setting;
 use App\Models\Table;
 use Illuminate\Support\Facades\Storage;
 use SimpleSoftwareIO\QrCode\Facades\QrCode;
@@ -15,7 +16,7 @@ class QRCodeService
      */
     public function generateTableQRCode(Table $table): string
     {
-        $restaurantPhone = config('whatsapp.restaurant.phone');
+        $restaurantPhone = Setting::get('whatsapp_phone_number_id', config('whatsapp.restaurant.phone'));
         $message = $this->generateTableMessage($table);
 
         // Create WhatsApp link
@@ -29,7 +30,7 @@ class QRCodeService
 
         // Save QR code
         $filename = "table_{$table->id}_{$table->name}.png";
-        $path = config('whatsapp.qr_code.storage_path', 'qr-codes/tables');
+        $path = Setting::get('whatsapp_qr_storage_path', config('whatsapp.qr_code.storage_path', 'qr-codes/tables'));
         $fullPath = "{$path}/{$filename}";
 
         Storage::disk('public')->put($fullPath, $qrCode);
@@ -72,7 +73,7 @@ class QRCodeService
     public function getTableQRCodeUrl(Table $table): ?string
     {
         $filename = "table_{$table->id}_{$table->name}.png";
-        $path = config('whatsapp.qr_code.storage_path', 'qr-codes/tables');
+        $path = Setting::get('whatsapp_qr_storage_path', config('whatsapp.qr_code.storage_path', 'qr-codes/tables'));
         $fullPath = "{$path}/{$filename}";
 
         if (Storage::disk('public')->exists($fullPath)) {

@@ -50,6 +50,14 @@ class Table extends Model
     }
 
     /**
+     * Get all reservations for the table.
+     */
+    public function reservations(): HasMany
+    {
+        return $this->hasMany(Reservation::class);
+    }
+
+    /**
      * Check if table is available.
      */
     public function isAvailable(): bool

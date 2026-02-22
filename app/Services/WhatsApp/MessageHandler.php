@@ -2,7 +2,10 @@
 
 namespace App\Services\WhatsApp;
 
+use App\Jobs\ProcessAiMessage;
 use App\Models\Guest;
+use App\Models\Setting;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
 
 class MessageHandler
@@ -11,16 +14,16 @@ class MessageHandler
 
     protected FlowManager $flowManager;
 
-    protected StateManager $stateManager;
+    protected ConversationManager $conversationManager;
 
     public function __construct(
         WhatsAppService $whatsappService,
         FlowManager $flowManager,
-        StateManager $stateManager
+        ConversationManager $conversationManager
     ) {
         $this->whatsappService = $whatsappService;
         $this->flowManager = $flowManager;
-        $this->stateManager = $stateManager;
+        $this->conversationManager = $conversationManager;
     }
 
     /**
@@ -33,34 +36,96 @@ class MessageHandler
         $timestamp = $message['timestamp'] ?? null;
         $type = $message['type'] ?? 'unknown';
 
+        Log::channel('whatsapp')->info('--- MessageHandler::handle() START ---', [
+            'from' => $from,
+            'type' => $type,
+            'message_id' => $messageId,
+            'timestamp' => $timestamp,
+        ]);
+
         if (! $from) {
-            Log::warning('WhatsApp message received without sender');
+            Log::channel('whatsapp')->warning('Message received without sender — skipping');
 
             return;
         }
 
         // Mark message as read
         if ($messageId) {
-            $this->whatsappService->markAsRead($messageId);
+            Log::channel('whatsapp')->info('Marking message as read', ['message_id' => $messageId]);
+            try {
+                $this->whatsappService->markAsRead($messageId);
+                Log::channel('whatsapp')->info('Message marked as read OK');
+            } catch (\Exception $e) {
+                Log::channel('whatsapp')->warning('Failed to mark as read (non-fatal)', ['error' => $e->getMessage()]);
+            }
         }
 
-        Log::info('Processing WhatsApp message', [
-            'from' => $from,
-            'type' => $type,
-            'message_id' => $messageId,
+        // Get or create guest
+        Log::channel('whatsapp')->info('Getting/creating guest', ['phone' => $from]);
+        $guest = $this->getOrCreateGuest($from, $context);
+        Log::channel('whatsapp')->info('Guest resolved', [
+            'guest_id' => $guest->id,
+            'guest_name' => $guest->name,
+            'was_new' => $guest->wasRecentlyCreated,
         ]);
 
-        // Get or create guest
-        $guest = $this->getOrCreateGuest($from, $context);
+        // Link guest to session
+        $this->conversationManager->linkGuest($from, $guest->id);
 
         // Get current conversation state
-        $state = $this->stateManager->getState($guest);
+        $state = $this->conversationManager->getState($from);
+        $sessionData = $this->conversationManager->getSessionData($from);
+        Log::channel('whatsapp')->info('Session state', [
+            'state' => $state,
+            'session_data_keys' => array_keys($sessionData),
+        ]);
 
         // Process message based on type
         $messageData = $this->extractMessageData($message, $type);
+        Log::channel('whatsapp')->info('Extracted message data', $messageData);
 
-        // Handle the message through flow manager
+        // ── Deduplication ──
+        // WhatsApp retries webhooks if we don't respond fast enough.
+        // Skip messages we've already seen (keyed by wamid, TTL 10 min).
+        if ($messageId) {
+            $dedupKey = "wa-msg-seen:{$messageId}";
+            if (Cache::has($dedupKey)) {
+                Log::channel('whatsapp')->info('Duplicate message skipped', [
+                    'message_id' => $messageId,
+                ]);
+
+                return;
+            }
+            Cache::put($dedupKey, true, 600); // 10 minutes
+        }
+
+        // ── AI Agent (async via queue job) ──
+        $aiEnabled = Setting::get('whatsapp_ai_enabled', false);
+        if ($aiEnabled) {
+            Log::channel('whatsapp')->info('AI Agent enabled — dispatching to queue', [
+                'guest_id' => $guest->id,
+                'phone' => $from,
+            ]);
+
+            // Dispatch to the "ai" queue. The job handles AI processing
+            // and falls back to FlowManager if the AI fails.
+            // PHP-FPM worker is freed immediately.
+            ProcessAiMessage::dispatch($guest->id, $messageData, $state);
+
+            Log::channel('whatsapp')->info('--- MessageHandler::handle() DONE (queued for AI) ---');
+
+            return;
+        }
+
+        // ── FlowManager (synchronous, AI disabled) ──
+        Log::channel('whatsapp')->info('Dispatching to FlowManager::processMessage()');
         $this->flowManager->processMessage($guest, $state, $messageData);
+
+        $newState = $this->conversationManager->getState($from);
+        Log::channel('whatsapp')->info('--- MessageHandler::handle() DONE ---', [
+            'previous_state' => $state,
+            'new_state' => $newState,
+        ]);
     }
 
     /**
@@ -115,8 +180,8 @@ class MessageHandler
                 break;
 
             case 'button':
-                $data['button_text'] = $message['button']['text'] ?? '';
-                $data['button_payload'] = $message['button']['payload'] ?? '';
+                $data['text'] = $message['button']['text'] ?? '';
+                $data['button_id'] = $message['button']['payload'] ?? $data['text'];
                 break;
 
             case 'image':

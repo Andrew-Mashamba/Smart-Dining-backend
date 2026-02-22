@@ -27,6 +27,12 @@ class EventServiceProvider extends ServiceProvider
         \App\Events\OrderStatusUpdated::class => [
             \App\Listeners\SendOrderReadyFcmNotification::class,
         ],
+        \App\Events\WaiterRequested::class => [
+            \App\Listeners\SendWaiterRequestFcm::class,
+        ],
+        \App\Events\ManagerRequested::class => [
+            \App\Listeners\SendManagerRequestFcm::class,
+        ],
     ];
 
     /**

@@ -43,6 +43,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'webhooks/whatsapp',
             'webhooks/stripe',
             'api/webhooks/stripe',
+            'api/webhooks/mpesa',
         ]);
 
         // API rate limiting: 60 requests per minute

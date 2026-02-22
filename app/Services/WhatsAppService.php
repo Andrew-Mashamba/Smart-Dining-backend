@@ -7,6 +7,7 @@ use App\Models\MenuCategory;
 use App\Models\MenuItem;
 use App\Models\Order;
 use App\Models\OrderItem;
+use App\Models\Setting;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Netflie\WhatsAppCloudApi\WhatsAppCloudApi;
@@ -19,10 +20,10 @@ class WhatsAppService
 
     public function __construct()
     {
-        $this->fromPhoneNumberId = config('services.whatsapp.phone_number_id');
+        $this->fromPhoneNumberId = Setting::get('whatsapp_phone_number_id', config('services.whatsapp.phone_number_id'));
         $this->whatsapp = new WhatsAppCloudApi([
             'from_phone_number_id' => $this->fromPhoneNumberId,
-            'access_token' => config('services.whatsapp.api_token'),
+            'access_token' => Setting::get('whatsapp_access_token', config('services.whatsapp.api_token')),
         ]);
     }
 

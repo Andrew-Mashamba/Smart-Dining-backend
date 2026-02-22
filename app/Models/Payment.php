@@ -22,6 +22,9 @@ class Payment extends Model
         'status',
         'transaction_id',
         'gateway_response',
+        'token',
+        'token_expires_at',
+        'completed_at',
     ];
 
     /**
@@ -32,6 +35,8 @@ class Payment extends Model
     protected $casts = [
         'amount' => 'decimal:2',
         'gateway_response' => 'array',
+        'token_expires_at' => 'datetime',
+        'completed_at' => 'datetime',
     ];
 
     /**
@@ -47,7 +52,7 @@ class Payment extends Model
      */
     public function markAsCompleted(): void
     {
-        $this->update(['status' => 'completed']);
+        $this->update(['status' => 'completed', 'completed_at' => now()]);
     }
 
     /**

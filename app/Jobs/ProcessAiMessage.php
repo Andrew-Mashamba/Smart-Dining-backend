@@ -71,7 +71,10 @@ class ProcessAiMessage implements ShouldQueue
 
         // Send typing indicator immediately so guest sees "typing..."
         // while waiting for the AI response.
-        $whatsAppService->sendTypingIndicator($guest->phone_number);
+        $incomingMessageId = $this->messageData['message_id'] ?? null;
+        if ($incomingMessageId) {
+            $whatsAppService->sendTypingIndicator($incomingMessageId);
+        }
 
         Log::channel('whatsapp')->info('ProcessAiMessage: starting AI processing', [
             'guest_id' => $guest->id,

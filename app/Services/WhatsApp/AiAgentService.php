@@ -210,15 +210,27 @@ class AiAgentService
         $closingHours = Setting::get('closing_hours', '23:00');
 
         return <<<SYSTEM
-You are {$businessName}'s WhatsApp concierge in Dar es Salaam. Respond DIRECTLY to the guest.
+You are NOT writing code or helping a developer. You ARE a WhatsApp chatbot.
+Your stdout is piped directly into a WhatsApp message to a restaurant guest. The guest reads every character you print. There is no developer, no post-processing, no human review between your output and the guest's screen.
+
+You are {$businessName}'s WhatsApp concierge in Dar es Salaam.
+
+WHAT TO OUTPUT: Only the message the guest should read. Write as if you are typing into their WhatsApp chat right now.
+WHAT NEVER TO OUTPUT:
+- Preambles: "Here's the reply", "Use this as the message", "Send this to the guest"
+- Directions: "Strip these tags", "The first paragraph is for the guest", "Internal tags for..."
+- Technical details: file paths, model names, class names, database errors, PHP references, tinker output, stack traces
+- Internal reasoning: "I tried to run...", "The codebase references...", "tinker fails..."
+- Developer language: codebase, repository, model, migration, endpoint, controller, environment
+
+If a tool or command fails, do NOT explain why. Just say something natural like "Let me have the team help with that." and use {{NOTIFY_WAITER:...}} or {{HANDOFF_TO_STAFF:...}} to alert staff.
 
 RULES:
 - PLAIN TEXT ONLY. No markdown, no asterisks, no bold/italic, no backticks, no code blocks.
-- Your ENTIRE output is sent as-is to WhatsApp. No preambles, no framing, no developer notes.
 - Prices in TZS with commas (e.g., TZS 15,000). Tax: 18% VAT.
 - Be warm, concise, professional. Use the guest's name. 2-4 sentences for simple queries. Use dashes for lists.
 - NEVER reveal code, queries, system internals, or API keys.
-- If stuck, suggest asking a waiter.
+- If stuck, suggest asking a waiter or hand off to staff.
 - Hours: {$openingHours} to {$closingHours}. Currency: TZS.
 
 SESSION ISOLATION:
@@ -458,7 +470,8 @@ SYSTEM;
         $parts[] = $this->buildPromotionsContext();
 
         // ── The guest's message ──
-        $parts[] = "Guest says: {$userText}";
+        // Framing reinforces that the agent's output IS the WhatsApp reply.
+        $parts[] = "GUEST MESSAGE: {$userText}\n\nYOUR WHATSAPP REPLY (type directly to the guest — no preamble, no instructions, just your message):";
 
         return implode("\n\n", array_filter($parts));
     }
@@ -1190,8 +1203,22 @@ SYSTEM;
      */
     protected function sanitizeForWhatsApp(string $text): string
     {
-        // Remove preamble lines like "Here's the reply:" or "Here's the message to send:"
-        $text = preg_replace('/^(Here\'s|Use this|Below is|This is).*?:\s*\n/i', '', $text);
+        // Normalize line endings to \n
+        $text = str_replace("\r\n", "\n", $text);
+        $text = str_replace("\r", "\n", $text);
+
+        // Remove preamble block: any opening lines ending with ":" followed by blank line
+        // Catches: "Here's the reply to send to the guest (...):", "Use this as the WhatsApp reply:", etc.
+        $text = preg_replace('/^.{0,200}:\s*\n\n/s', '', $text);
+
+        // Remove meta-instructions (AI talking about what to send/strip)
+        $text = preg_replace('/^.*(send .*(to the guest|to the client|as .*reply)|strip .*(before sending|internal tags)|notification tags .*stripped|the (first|last) .*(paragraph|line|sentence).*for).*$/im', '', $text);
+
+        // Remove lines with technical/developer content
+        $text = preg_replace('/^.*\b(App\\\\Models\\\\|artisan tinker|codebase|php artisan|ErrorException|stack ?trace|vendor\/|app\/Models\/|app\/Http\/|\.php\b|namespace |class \w+|->where\(|::find\(|::create\(|DB::raw|migration|controller|endpoint|repository|subprocess).*$/im', '', $text);
+
+        // Remove lines that expose internal reasoning about tool failures
+        $text = preg_replace('/^.*(tinker fails|no .+\.php|doesn\'t exist in|not found in app|can\'t be (cancelled|modified) .*(from here|in the system|in this environment)).*$/im', '', $text);
 
         // Remove --- delimiters
         $text = preg_replace('/^---\s*$/m', '', $text);

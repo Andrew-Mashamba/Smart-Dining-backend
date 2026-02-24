@@ -248,10 +248,14 @@ class WhatsAppService
 
     /**
      * Send typing indicator to show "typing..." in the guest's chat.
-     * Lasts up to 25 seconds. Call before starting AI processing
-     * so the guest sees immediate feedback while waiting.
+     * Lasts up to 25 seconds or until a reply is sent, whichever
+     * comes first. Call before starting AI processing so the guest
+     * sees immediate feedback while waiting.
+     *
+     * Requires the incoming message ID (wamid) — the API marks
+     * that message as read and displays the typing bubble.
      */
-    public function sendTypingIndicator(string $to): void
+    public function sendTypingIndicator(string $messageId): void
     {
         $url = "{$this->apiUrl}/{$this->phoneNumberId}/messages";
 
@@ -259,14 +263,15 @@ class WhatsAppService
             Http::withToken($this->accessToken)
                 ->post($url, [
                     'messaging_product' => 'whatsapp',
-                    'recipient_type' => 'individual',
-                    'to' => $to,
-                    'type' => 'reaction',
-                    'status' => 'typing',
+                    'status' => 'read',
+                    'message_id' => $messageId,
+                    'typing_indicator' => [
+                        'type' => 'text',
+                    ],
                 ]);
         } catch (\Exception $e) {
             // Non-fatal — don't break the flow if typing indicator fails
-            Log::debug('Typing indicator failed', ['to' => $to, 'error' => $e->getMessage()]);
+            Log::debug('Typing indicator failed', ['message_id' => $messageId, 'error' => $e->getMessage()]);
         }
     }
 }

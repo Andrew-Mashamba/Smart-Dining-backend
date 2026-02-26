@@ -5,6 +5,7 @@ use App\Http\Controllers\Web\AuthController;
 use App\Http\Controllers\Web\BarController;
 use App\Http\Controllers\Web\KitchenController;
 use App\Http\Controllers\Web\ManagerController;
+use App\Http\Controllers\Web\ProposalController;
 use App\Http\Controllers\WhatsApp\WebhookController;
 use App\Livewire\BarDisplay;
 use App\Livewire\CreateOrder;
@@ -183,6 +184,18 @@ Route::middleware(['auth:web'])->group(function () {
 
     // Bar Display System Livewire component route (bartender, manager, and admin access)
     Route::get('/bar', BarDisplay::class)->middleware(['auth', 'role:bartender,manager,admin'])->name('bar');
+
+    // Proposals (admin and manager access) — create and download proposal PDFs
+    Route::middleware(['role:admin,manager'])->prefix('proposals')->name('proposals.')->group(function () {
+        Route::get('/', [ProposalController::class, 'index'])->name('index');
+        Route::get('/create', [ProposalController::class, 'create'])->name('create');
+        Route::get('/cape-classique-smart-dining', fn () => view('pdf.proposal-cape-classique-smart-dining'))->name('cape-classique');
+        Route::post('/', [ProposalController::class, 'store'])->name('store');
+        Route::get('/{proposal}', [ProposalController::class, 'show'])->name('show');
+        Route::get('/{proposal}/edit', [ProposalController::class, 'edit'])->name('edit');
+        Route::put('/{proposal}', [ProposalController::class, 'update'])->name('update');
+        Route::get('/{proposal}/pdf', [ProposalController::class, 'downloadPdf'])->name('download');
+    });
 
     // Manager Portal (admin and manager access)
     Route::middleware(['role:admin,manager'])->prefix('manager')->name('manager.')->group(function () {

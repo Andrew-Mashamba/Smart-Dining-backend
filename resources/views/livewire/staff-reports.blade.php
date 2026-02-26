@@ -154,13 +154,13 @@
                                     {{ number_format($staff->total_orders) }}
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-gray-900 font-semibold">
-                                    ${{ number_format($staff->total_revenue, 2) }}
+                                    TZS {{ number_format($staff->total_revenue, 2) }}
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-gray-700">
-                                    ${{ number_format($staff->average_order_value, 2) }}
+                                    TZS {{ number_format($staff->average_order_value, 2) }}
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-gray-900 font-semibold">
-                                    ${{ number_format($staff->total_tips, 2) }}
+                                    TZS {{ number_format($staff->total_tips, 2) }}
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-gray-700">
                                     {{ number_format($staff->average_tip_percentage, 1) }}%
@@ -169,17 +169,17 @@
                                     <div class="text-sm space-y-1">
                                         @if(isset($staff->tip_breakdown['cash']) && $staff->tip_breakdown['cash'] > 0)
                                             <div class="text-gray-700">
-                                                <span class="text-gray-500">Cash:</span> ${{ number_format($staff->tip_breakdown['cash'], 2) }}
+                                                <span class="text-gray-500">Cash:</span> TZS {{ number_format($staff->tip_breakdown['cash'], 2) }}
                                             </div>
                                         @endif
                                         @if(isset($staff->tip_breakdown['card']) && $staff->tip_breakdown['card'] > 0)
                                             <div class="text-gray-700">
-                                                <span class="text-gray-500">Card:</span> ${{ number_format($staff->tip_breakdown['card'], 2) }}
+                                                <span class="text-gray-500">Card:</span> TZS {{ number_format($staff->tip_breakdown['card'], 2) }}
                                             </div>
                                         @endif
                                         @if(isset($staff->tip_breakdown['mobile']) && $staff->tip_breakdown['mobile'] > 0)
                                             <div class="text-gray-700">
-                                                <span class="text-gray-500">Mobile:</span> ${{ number_format($staff->tip_breakdown['mobile'], 2) }}
+                                                <span class="text-gray-500">Mobile:</span> TZS {{ number_format($staff->tip_breakdown['mobile'], 2) }}
                                             </div>
                                         @endif
                                         @if(empty($staff->tip_breakdown))
@@ -230,14 +230,14 @@
                             borderWidth: 1
                         },
                         {
-                            label: 'Revenue ($)',
+                            label: 'Revenue (TZS)',
                             data: chartData.revenue,
                             backgroundColor: '#4B5563',
                             borderColor: '#4B5563',
                             borderWidth: 1
                         },
                         {
-                            label: 'Tips ($)',
+                            label: 'Tips (TZS)',
                             data: chartData.tips,
                             backgroundColor: '#9CA3AF',
                             borderColor: '#9CA3AF',
@@ -273,7 +273,7 @@
                                     if (context.dataset.label === 'Orders Served') {
                                         label += context.parsed.y;
                                     } else {
-                                        label += '$' + context.parsed.y.toFixed(2);
+                                        label += 'TZS ' + context.parsed.y.toFixed(2);
                                     }
                                     return label;
                                 }

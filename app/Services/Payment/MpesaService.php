@@ -74,7 +74,7 @@ class MpesaService
             'PhoneNumber' => $formattedPhone,
             'CallBackURL' => Setting::get('mpesa_callback_url', config('mpesa.callback_url')),
             'AccountReference' => $reference,
-            'TransactionDesc' => 'SeaCliff Order Payment',
+            'TransactionDesc' => Setting::get('business_name', config('app.name', 'Smart Dining')) . ' Order Payment',
         ];
 
         $response = Http::withToken($this->getAccessToken())

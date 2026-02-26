@@ -162,25 +162,25 @@
                                 <span class="staff-email">{{ $staff->email }}</span>
                             </td>
                             <td class="text-center">{{ number_format($staff->total_orders) }}</td>
-                            <td class="text-right font-bold">${{ number_format($staff->total_revenue, 2) }}</td>
-                            <td class="text-right">${{ number_format($staff->average_order_value, 2) }}</td>
-                            <td class="text-right font-bold">${{ number_format($staff->total_tips, 2) }}</td>
+                            <td class="text-right font-bold">TZS {{ number_format($staff->total_revenue, 2) }}</td>
+                            <td class="text-right">TZS {{ number_format($staff->average_order_value, 2) }}</td>
+                            <td class="text-right font-bold">TZS {{ number_format($staff->total_tips, 2) }}</td>
                             <td class="text-right">{{ number_format($staff->average_tip_percentage, 1) }}%</td>
                             <td>
                                 <div class="tip-breakdown">
                                     @if(isset($staff->tip_breakdown['cash']) && $staff->tip_breakdown['cash'] > 0)
                                         <div>
-                                            <span class="label">Cash:</span> ${{ number_format($staff->tip_breakdown['cash'], 2) }}
+                                            <span class="label">Cash:</span> TZS {{ number_format($staff->tip_breakdown['cash'], 2) }}
                                         </div>
                                     @endif
                                     @if(isset($staff->tip_breakdown['card']) && $staff->tip_breakdown['card'] > 0)
                                         <div>
-                                            <span class="label">Card:</span> ${{ number_format($staff->tip_breakdown['card'], 2) }}
+                                            <span class="label">Card:</span> TZS {{ number_format($staff->tip_breakdown['card'], 2) }}
                                         </div>
                                     @endif
                                     @if(isset($staff->tip_breakdown['mobile']) && $staff->tip_breakdown['mobile'] > 0)
                                         <div>
-                                            <span class="label">Mobile:</span> ${{ number_format($staff->tip_breakdown['mobile'], 2) }}
+                                            <span class="label">Mobile:</span> TZS {{ number_format($staff->tip_breakdown['mobile'], 2) }}
                                         </div>
                                     @endif
                                     @if(empty($staff->tip_breakdown))
@@ -205,18 +205,18 @@
                         <td style="border: none; padding: 5px 0; width: 20px;"></td>
                         <td style="border: none; padding: 5px 0; font-weight: bold; color: #6B7280;">Total Revenue Generated:</td>
                         <td style="border: none; padding: 5px 0; text-align: right; font-weight: bold;">
-                            ${{ number_format($staff_performance->sum('total_revenue'), 2) }}
+                            TZS {{ number_format($staff_performance->sum('total_revenue'), 2) }}
                         </td>
                     </tr>
                     <tr style="background-color: transparent;">
                         <td style="border: none; padding: 5px 0; font-weight: bold; color: #6B7280;">Total Tips Earned:</td>
                         <td style="border: none; padding: 5px 0; text-align: right; font-weight: bold;">
-                            ${{ number_format($staff_performance->sum('total_tips'), 2) }}
+                            TZS {{ number_format($staff_performance->sum('total_tips'), 2) }}
                         </td>
                         <td style="border: none; padding: 5px 0; width: 20px;"></td>
                         <td style="border: none; padding: 5px 0; font-weight: bold; color: #6B7280;">Average Order Value:</td>
                         <td style="border: none; padding: 5px 0; text-align: right; font-weight: bold;">
-                            ${{ number_format($staff_performance->avg('average_order_value'), 2) }}
+                            TZS {{ number_format($staff_performance->avg('average_order_value'), 2) }}
                         </td>
                     </tr>
                 </table>

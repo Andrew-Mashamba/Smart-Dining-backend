@@ -185,10 +185,10 @@
     <div class="receipt-container">
         <!-- Header with Logo -->
         <div class="header">
-            <h1>{{ \App\Models\Setting::get('business_name', 'SeaCliff POS') }}</h1>
+            <h1>{{ \App\Models\Setting::get('business_name', config('app.name', 'Smart Dining')) }}</h1>
             <p>Restaurant Management System</p>
             <p style="margin-top: 5px; font-size: 10px;">{{ \App\Models\Setting::get('business_address', '123 Ocean Drive, Coastal City') }} | Phone: {{ \App\Models\Setting::get('business_phone', '(555) 123-4567') }}</p>
-            <p style="font-size: 10px;">Email: {{ \App\Models\Setting::get('business_email', 'info@seacliffpos.com') }}</p>
+            <p style="font-size: 10px;">Email: {{ \App\Models\Setting::get('business_email', 'info@restaurant.com') }}</p>
             <p style="margin-top: 10px; font-weight: bold;">OFFICIAL RECEIPT</p>
         </div>
 
@@ -246,8 +246,8 @@
                         @endif
                     </td>
                     <td class="text-right">{{ $item->quantity }}</td>
-                    <td class="text-right">${{ number_format($item->unit_price, 2) }}</td>
-                    <td class="text-right">${{ number_format($item->subtotal, 2) }}</td>
+                    <td class="text-right">TZS {{ number_format($item->unit_price, 2) }}</td>
+                    <td class="text-right">TZS {{ number_format($item->subtotal, 2) }}</td>
                 </tr>
                 @endforeach
             </tbody>
@@ -257,15 +257,15 @@
         <div class="summary">
             <div class="summary-row">
                 <span class="label">Subtotal:</span>
-                <span class="value">${{ number_format($order->subtotal, 2) }}</span>
+                <span class="value">TZS {{ number_format($order->subtotal, 2) }}</span>
             </div>
             <div class="summary-row">
                 <span class="label">Tax ({{ \App\Models\Setting::get('tax_rate', 18) }}%):</span>
-                <span class="value">${{ number_format($order->tax, 2) }}</span>
+                <span class="value">TZS {{ number_format($order->tax, 2) }}</span>
             </div>
             <div class="summary-row total">
                 <span class="label">Total:</span>
-                <span class="value">${{ number_format($order->total, 2) }}</span>
+                <span class="value">TZS {{ number_format($order->total, 2) }}</span>
             </div>
 
             @php
@@ -275,13 +275,13 @@
             @if($totalPaid > 0)
             <div class="summary-row">
                 <span class="label">Paid:</span>
-                <span class="value">${{ number_format($totalPaid, 2) }}</span>
+                <span class="value">TZS {{ number_format($totalPaid, 2) }}</span>
             </div>
 
             @if($totalPaid < $order->total)
             <div class="summary-row">
                 <span class="label">Balance Due:</span>
-                <span class="value">${{ number_format($order->total - $totalPaid, 2) }}</span>
+                <span class="value">TZS {{ number_format($order->total - $totalPaid, 2) }}</span>
             </div>
             @endif
             @endif
@@ -289,7 +289,7 @@
             @if($order->tip)
             <div class="summary-row">
                 <span class="label">Tip:</span>
-                <span class="value">${{ number_format($order->tip->amount, 2) }}</span>
+                <span class="value">TZS {{ number_format($order->tip->amount, 2) }}</span>
             </div>
             @endif
         </div>
@@ -301,7 +301,7 @@
             @foreach($order->payments as $payment)
             <div class="order-info-row" style="margin-bottom: 5px;">
                 <span class="value">{{ ucfirst(str_replace('_', ' ', $payment->payment_method)) }}:</span>
-                <span class="value">${{ number_format($payment->amount, 2) }} - {{ $payment->created_at->format('M d, H:i') }}</span>
+                <span class="value">TZS {{ number_format($payment->amount, 2) }} - {{ $payment->created_at->format('M d, H:i') }}</span>
             </div>
             @endforeach
         </div>
@@ -318,7 +318,7 @@
         <!-- Footer -->
         <div class="footer">
             <p>Thank you for dining with us!</p>
-            <p>Sea Cliff Smart Dining System</p>
+            <p>{{ config('app.name', 'Smart Dining') }} System</p>
             <p>Generated on {{ now()->format('F d, Y H:i:s') }}</p>
         </div>
     </div>

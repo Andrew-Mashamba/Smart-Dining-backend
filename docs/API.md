@@ -1,4 +1,4 @@
-# SeaCliff POS - API Documentation
+# Smart Dining POS - API Documentation
 
 ## Table of Contents
 1. [Introduction](#introduction)
@@ -26,7 +26,7 @@
 
 ## Introduction
 
-The SeaCliff POS API is a RESTful API that provides programmatic access to all POS functionality. It uses JSON for request and response bodies, and Laravel Sanctum for authentication.
+The Smart Dining POS API is a RESTful API that provides programmatic access to all POS functionality. It uses JSON for request and response bodies, and Laravel Sanctum for authentication.
 
 ### Key Features
 - RESTful architecture
@@ -1173,7 +1173,7 @@ Get QR code for table.
   "data": {
     "table_id": 5,
     "qr_code_url": "/storage/qr-codes/table-5.png",
-    "guest_order_url": "https://seacliff.com/guest/order?table=5"
+    "guest_order_url": "https://smartdining.com/guest/order?table=5"
   }
 }
 ```

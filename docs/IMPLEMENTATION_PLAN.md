@@ -1,4 +1,4 @@
-# SeaCliff POS - Laravel Backend Implementation Plan
+# Smart Dining POS - Laravel Backend Implementation Plan
 
 ## Table of Contents
 1. [Executive Summary](#1-executive-summary)
@@ -21,7 +21,7 @@
 ## 1. Executive Summary
 
 ### Project Overview
-The SeaCliff POS Laravel Backend serves as the central nervous system for a comprehensive restaurant management platform. It provides:
+The Smart Dining POS Laravel Backend serves as the central nervous system for a comprehensive restaurant management platform. It provides:
 
 - **REST API** for Android POS application
 - **Web Portals** for Chef, Bartender, and Manager roles
@@ -1788,15 +1788,15 @@ class FCMService
 ```bash
 # .env.production
 
-APP_NAME="SeaCliff POS"
+APP_NAME="Smart Dining POS"
 APP_ENV=production
 APP_DEBUG=false
-APP_URL=https://pos.seacliff.co.tz
+APP_URL=https://pos.smartdining.co.tz
 
 DB_CONNECTION=mysql
 DB_HOST=127.0.0.1
 DB_PORT=3306
-DB_DATABASE=seacliff_pos
+DB_DATABASE=smart_dining_pos
 DB_USERNAME=pos_user
 DB_PASSWORD=secure_password
 
@@ -1809,14 +1809,14 @@ REDIS_PASSWORD=null
 REDIS_PORT=6379
 
 # Reverb WebSocket
-REVERB_APP_ID=seacliff-pos
+REVERB_APP_ID=smart-dining-pos
 REVERB_APP_KEY=your-reverb-key
 REVERB_APP_SECRET=your-reverb-secret
-REVERB_HOST=ws.seacliff.co.tz
+REVERB_HOST=ws.smartdining.co.tz
 REVERB_PORT=443
 
 # Firebase
-FIREBASE_PROJECT_ID=seacliff-pos
+FIREBASE_PROJECT_ID=smart-dining-pos
 FIREBASE_CREDENTIALS=storage/firebase-service-account.json
 
 # Payment Gateways
@@ -1841,20 +1841,20 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    container_name: seacliff-pos-app
+    container_name: smart-dining-pos-app
     restart: unless-stopped
     volumes:
       - .:/var/www/html
       - ./storage:/var/www/html/storage
     networks:
-      - seacliff-network
+      - smart-dining-network
     depends_on:
       - mysql
       - redis
 
   nginx:
     image: nginx:alpine
-    container_name: seacliff-pos-nginx
+    container_name: smart-dining-pos-nginx
     restart: unless-stopped
     ports:
       - "80:80"
@@ -1864,44 +1864,44 @@ services:
       - ./docker/nginx/conf.d:/etc/nginx/conf.d
       - ./docker/nginx/ssl:/etc/nginx/ssl
     networks:
-      - seacliff-network
+      - smart-dining-network
     depends_on:
       - app
 
   mysql:
     image: mysql:8.0
-    container_name: seacliff-pos-mysql
+    container_name: smart-dining-pos-mysql
     restart: unless-stopped
     environment:
-      MYSQL_DATABASE: seacliff_pos
+      MYSQL_DATABASE: smart_dining_pos
       MYSQL_USER: pos_user
       MYSQL_PASSWORD: secure_password
       MYSQL_ROOT_PASSWORD: root_password
     volumes:
       - mysql-data:/var/lib/mysql
     networks:
-      - seacliff-network
+      - smart-dining-network
 
   redis:
     image: redis:alpine
-    container_name: seacliff-pos-redis
+    container_name: smart-dining-pos-redis
     restart: unless-stopped
     volumes:
       - redis-data:/data
     networks:
-      - seacliff-network
+      - smart-dining-network
 
   reverb:
     build:
       context: .
       dockerfile: Dockerfile
-    container_name: seacliff-pos-reverb
+    container_name: smart-dining-pos-reverb
     restart: unless-stopped
     command: php artisan reverb:start
     volumes:
       - .:/var/www/html
     networks:
-      - seacliff-network
+      - smart-dining-network
     depends_on:
       - redis
 
@@ -1909,13 +1909,13 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    container_name: seacliff-pos-queue
+    container_name: smart-dining-pos-queue
     restart: unless-stopped
     command: php artisan queue:work --tries=3
     volumes:
       - .:/var/www/html
     networks:
-      - seacliff-network
+      - smart-dining-network
     depends_on:
       - mysql
       - redis
@@ -1924,19 +1924,19 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    container_name: seacliff-pos-scheduler
+    container_name: smart-dining-pos-scheduler
     restart: unless-stopped
     command: php artisan schedule:work
     volumes:
       - .:/var/www/html
     networks:
-      - seacliff-network
+      - smart-dining-network
     depends_on:
       - mysql
       - redis
 
 networks:
-  seacliff-network:
+  smart-dining-network:
     driver: bridge
 
 volumes:
@@ -2483,4 +2483,4 @@ laravel-app/
 
 *Document Version: 1.0*
 *Last Updated: February 2025*
-*Author: SeaCliff POS Development Team*
+*Author: Smart Dining POS Development Team*

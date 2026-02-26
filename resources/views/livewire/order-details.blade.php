@@ -109,10 +109,10 @@
                             {{ $item->quantity }}
                         </td>
                         <td class="px-6 py-4 text-sm text-gray-600">
-                            ${{ number_format($item->unit_price, 2) }}
+                            TZS {{ number_format($item->unit_price, 2) }}
                         </td>
                         <td class="px-6 py-4 text-sm text-gray-600">
-                            ${{ number_format($item->subtotal, 2) }}
+                            TZS {{ number_format($item->subtotal, 2) }}
                         </td>
                         <td class="px-6 py-4 text-sm">
                             <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium {{ $this->getPrepStatusBadgeClass($item->prep_status) }}">
@@ -146,19 +146,19 @@
                     <!-- Subtotal -->
                     <div class="flex justify-between">
                         <span class="text-gray-900 font-medium">Subtotal:</span>
-                        <span class="text-gray-600">${{ number_format($order->subtotal, 2) }}</span>
+                        <span class="text-gray-600">TZS {{ number_format($order->subtotal, 2) }}</span>
                     </div>
 
                     <!-- Tax -->
                     <div class="flex justify-between">
                         <span class="text-gray-900 font-medium">Tax (18%):</span>
-                        <span class="text-gray-600">${{ number_format($order->tax, 2) }}</span>
+                        <span class="text-gray-600">TZS {{ number_format($order->tax, 2) }}</span>
                     </div>
 
                     <!-- Total -->
                     <div class="flex justify-between pt-3 border-t border-gray-200">
                         <span class="text-lg font-bold text-gray-900">Total:</span>
-                        <span class="text-lg font-bold text-gray-900">${{ number_format($order->total, 2) }}</span>
+                        <span class="text-lg font-bold text-gray-900">TZS {{ number_format($order->total, 2) }}</span>
                     </div>
 
                     <!-- Payment Status -->
@@ -176,14 +176,14 @@
                     @if($totalPaid > 0)
                     <div class="flex justify-between">
                         <span class="text-gray-900 font-medium">Paid:</span>
-                        <span class="text-gray-600">${{ number_format($totalPaid, 2) }}</span>
+                        <span class="text-gray-600">TZS {{ number_format($totalPaid, 2) }}</span>
                     </div>
 
                     <!-- Remaining Balance -->
                     @if($totalPaid < $order->total)
                     <div class="flex justify-between">
                         <span class="text-gray-900 font-medium">Balance:</span>
-                        <span class="text-gray-600">${{ number_format($order->total - $totalPaid, 2) }}</span>
+                        <span class="text-gray-600">TZS {{ number_format($order->total - $totalPaid, 2) }}</span>
                     </div>
                     @endif
                     @endif
@@ -192,7 +192,7 @@
                     @if($order->tip)
                     <div class="flex justify-between pt-3 border-t border-gray-200">
                         <span class="text-gray-900 font-medium">Tip:</span>
-                        <span class="text-gray-600">${{ number_format($order->tip->amount, 2) }} ({{ ucfirst($order->tip->tip_method) }})</span>
+                        <span class="text-gray-600">TZS {{ number_format($order->tip->amount, 2) }} ({{ ucfirst($order->tip->tip_method) }})</span>
                     </div>
                     @endif
                 </div>
@@ -210,7 +210,7 @@
                             <p class="text-xs text-gray-600">{{ $payment->created_at->format('M d, Y H:i') }}</p>
                         </div>
                         <div class="text-right">
-                            <p class="text-sm font-semibold text-gray-900">${{ number_format($payment->amount, 2) }}</p>
+                            <p class="text-sm font-semibold text-gray-900">TZS {{ number_format($payment->amount, 2) }}</p>
                             <p class="text-xs text-gray-600">{{ ucfirst($payment->status) }}</p>
                         </div>
                     </div>

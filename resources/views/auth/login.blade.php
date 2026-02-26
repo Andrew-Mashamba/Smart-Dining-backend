@@ -113,7 +113,7 @@
         <div class="px-8 py-5 bg-gray-50">
             <p class="text-center text-sm text-gray-500">
                 Need help? Contact your manager or
-                <a href="mailto:support@seacliff.com" class="text-gray-900 font-medium hover:underline">support@seacliff.com</a>
+                <a href="mailto:{{ \App\Models\Setting::get('business_email', 'support@restaurant.com') }}" class="text-gray-900 font-medium hover:underline">{{ \App\Models\Setting::get('business_email', 'support@restaurant.com') }}</a>
             </p>
         </div>
     </x-authentication-card>

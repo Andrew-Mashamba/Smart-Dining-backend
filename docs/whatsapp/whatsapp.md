@@ -49,7 +49,7 @@ WHATSAPP_VERIFY_TOKEN=your_webhook_verify_token
 ```
 ┌─────────────────────────────────────────────────────────────────┐
 │                    MAIN MENU                                     │
-│  "Welcome to SeaCliff! What would you like to do?"              │
+│  "Welcome to Smart Dining! What would you like to do?"           │
 ├─────────────────────────────────────────────────────────────────┤
 │  1️⃣ Make a Reservation                                          │
 │  2️⃣ View Menu & Order                                           │
@@ -224,7 +224,7 @@ class MpesaService
             'PhoneNumber' => $phone,
             'CallBackURL' => route('webhooks.mpesa'),
             'AccountReference' => $reference,
-            'TransactionDesc' => 'SeaCliff Order Payment'
+            'TransactionDesc' => 'Smart Dining Order Payment'
         ];
 
         return Http::withToken($this->getAccessToken())

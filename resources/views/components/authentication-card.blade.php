@@ -12,7 +12,7 @@
 
         <!-- Footer -->
         <p class="text-center text-xs text-gray-400 mt-6">
-            &copy; {{ date('Y') }} SeaCliff POS. All rights reserved.
+            &copy; {{ date('Y') }} {{ config('app.name', 'Smart Dining') }}. All rights reserved.
         </p>
     </div>
 </div>

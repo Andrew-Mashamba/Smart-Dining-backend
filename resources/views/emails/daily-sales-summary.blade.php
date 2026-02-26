@@ -102,7 +102,7 @@
             </div>
             <div class="summary-item">
                 <label>Total Revenue</label>
-                <div class="value">${{ number_format($totalRevenue, 2) }}</div>
+                <div class="value">TZS {{ number_format($totalRevenue, 2) }}</div>
             </div>
             <div class="summary-item">
                 <label>Completed Orders</label>
@@ -114,7 +114,7 @@
             </div>
             <div class="summary-item" style="grid-column: span 2;">
                 <label>Average Order Value</label>
-                <div class="value">${{ number_format($averageOrderValue, 2) }}</div>
+                <div class="value">TZS {{ number_format($averageOrderValue, 2) }}</div>
             </div>
         </div>
 
@@ -126,7 +126,7 @@
                 <li>
                     <span class="item-name">{{ $item['name'] }}</span>
                     <span class="item-stats">
-                        {{ $item['quantity'] }} sold | ${{ number_format($item['revenue'], 2) }}
+                        {{ $item['quantity'] }} sold | TZS {{ number_format($item['revenue'], 2) }}
                     </span>
                 </li>
                 @endforeach
@@ -135,8 +135,8 @@
         @endif
 
         <div class="footer">
-            <p>This is an automated report from SeaCliff Dining Management System</p>
-            <p>&copy; {{ date('Y') }} SeaCliff Dining. All rights reserved.</p>
+            <p>This is an automated report from {{ config('app.name', 'Smart Dining') }} Management System</p>
+            <p>&copy; {{ date('Y') }} {{ config('app.name', 'Smart Dining') }}. All rights reserved.</p>
         </div>
     </div>
 </body>

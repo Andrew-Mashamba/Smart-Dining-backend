@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\MenuCategory;
 use App\Models\Order;
+use App\Models\Setting;
 use App\Services\Menu\MenuService;
 use App\Services\Payment\PaymentService;
 use App\Services\WhatsApp\WhatsAppService;
@@ -56,7 +57,7 @@ class WhatsAppApiController extends Controller
         }
 
         // Build menu text
-        $menuText = "SeaCliff Restaurant Menu\n\n";
+        $menuText = Setting::get('business_name', config('app.name', 'Smart Dining')) . " Menu\n\n";
 
         foreach ($menuByCategory as $category) {
             if ($filterCategoryName && $category['category'] !== $filterCategoryName) {
@@ -147,7 +148,7 @@ class WhatsAppApiController extends Controller
         $totalPaid = $completedPayments->sum('amount');
 
         $receiptText = "Payment Receipt\n";
-        $receiptText .= "SeaCliff Restaurant\n";
+        $receiptText .= Setting::get('business_name', config('app.name', 'Smart Dining')) . "\n";
         $receiptText .= str_repeat('─', 30)."\n\n";
         $receiptText .= "Order: #{$order->order_number}\n";
         $receiptText .= "Date: {$order->created_at->format('d M Y, h:i A')}\n";
@@ -178,7 +179,7 @@ class WhatsAppApiController extends Controller
         }
 
         $receiptText .= str_repeat('─', 30)."\n";
-        $receiptText .= "Thank you for dining at SeaCliff!";
+        $receiptText .= "Thank you for dining at " . Setting::get('business_name', config('app.name', 'Smart Dining')) . "!";
 
         $result = $this->whatsappService->sendTextMessage($order->guest->phone_number, $receiptText);
 

@@ -1,6 +1,6 @@
 # Production Deployment Quick Start Guide
 
-**Quick reference for deploying SeaCliff Dining to production**
+**Quick reference for deploying Smart Dining to production**
 
 ---
 
@@ -44,9 +44,9 @@ sudo mv composer.phar /usr/local/bin/composer
 # Create database and user
 sudo -u postgres psql
 
-CREATE DATABASE seacliff_dining_production;
-CREATE USER seacliff_user WITH ENCRYPTED PASSWORD 'your_secure_password';
-GRANT ALL PRIVILEGES ON DATABASE seacliff_dining_production TO seacliff_user;
+CREATE DATABASE smart_dining_production;
+CREATE USER smart_dining_user WITH ENCRYPTED PASSWORD 'your_secure_password';
+GRANT ALL PRIVILEGES ON DATABASE smart_dining_production TO smart_dining_user;
 \q
 ```
 
@@ -107,8 +107,8 @@ APP_ENV=production
 APP_DEBUG=false
 APP_URL=https://yourdomain.com
 
-DB_DATABASE=seacliff_dining_production
-DB_USERNAME=seacliff_user
+DB_DATABASE=smart_dining_production
+DB_USERNAME=smart_dining_user
 DB_PASSWORD=your_secure_password
 
 REDIS_PASSWORD=your_redis_password

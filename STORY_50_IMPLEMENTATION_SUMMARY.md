@@ -156,7 +156,7 @@ LOG_DAILY_DAYS=30
 
 # Slack notifications for critical errors
 LOG_SLACK_WEBHOOK_URL=
-LOG_SLACK_USERNAME="SeaCliff Dining Alert"
+LOG_SLACK_USERNAME="Smart Dining Alert"
 LOG_SLACK_EMOJI=":warning:"
 LOG_SLACK_LEVEL=error
 
@@ -522,7 +522,7 @@ php artisan up
 ### Critical Production Settings
 ```env
 # Application
-APP_NAME="SeaCliff Dining"
+APP_NAME="Smart Dining"
 APP_ENV=production
 APP_KEY=base64:... (generate with: php artisan key:generate)
 APP_DEBUG=false
@@ -532,8 +532,8 @@ APP_URL=https://yourdomain.com
 DB_CONNECTION=pgsql
 DB_HOST=127.0.0.1
 DB_PORT=5432
-DB_DATABASE=seacliff_dining_production
-DB_USERNAME=seacliff_user
+DB_DATABASE=smart_dining_production
+DB_USERNAME=smart_dining_user
 DB_PASSWORD=your_secure_password
 
 # Cache & Sessions
@@ -757,7 +757,7 @@ sudo systemctl restart nginx
 php artisan migrate:rollback --step=1
 
 # Or restore from backup
-psql seacliff_dining_production < backup.sql
+psql smart_dining_production < backup.sql
 ```
 
 ---

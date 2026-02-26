@@ -200,11 +200,11 @@
 <body>
     {{-- Receipt Header with Business Information --}}
     <div class="receipt-header">
-        <div class="business-name">{{ \App\Models\Setting::get('business_name', config('app.name', 'SeaCliff Dining')) }}</div>
+        <div class="business-name">{{ \App\Models\Setting::get('business_name', config('app.name', 'Smart Dining')) }}</div>
         <div class="business-info">
             {{ \App\Models\Setting::get('business_address', '123 Ocean View Drive, Cape Town, South Africa 8001') }}<br>
             Tel: {{ \App\Models\Setting::get('business_phone', '+27 21 123 4567') }}<br>
-            Email: {{ \App\Models\Setting::get('business_email', 'info@seacliff-dining.co.za') }}
+            Email: {{ \App\Models\Setting::get('business_email', 'info@restaurant.com') }}
         </div>
     </div>
 
@@ -247,10 +247,10 @@
                 <div class="item-name">{{ $item->menuItem->name ?? 'Unknown Item' }}</div>
                 <div class="item-details">
                     <div class="item-qty-price">
-                        {{ $item->quantity }} x R{{ number_format($item->unit_price, 2) }}
+                        {{ $item->quantity }} x TZS {{ number_format($item->unit_price, 2) }}
                     </div>
                     <div class="item-subtotal">
-                        R{{ number_format($item->subtotal, 2) }}
+                        TZS {{ number_format($item->subtotal, 2) }}
                     </div>
                 </div>
                 @if($item->special_instructions)
@@ -267,21 +267,21 @@
     <div class="totals-section">
         <div class="total-row">
             <span class="total-label">Subtotal:</span>
-            <span class="total-amount">R{{ number_format($order->subtotal, 2) }}</span>
+            <span class="total-amount">TZS {{ number_format($order->subtotal, 2) }}</span>
         </div>
         <div class="total-row">
             <span class="total-label">Tax ({{ \App\Models\Setting::get('tax_rate', 18) }}% VAT):</span>
-            <span class="total-amount">R{{ number_format($order->tax, 2) }}</span>
+            <span class="total-amount">TZS {{ number_format($order->tax, 2) }}</span>
         </div>
         @if($order->tip)
         <div class="total-row">
             <span class="total-label">Tip:</span>
-            <span class="total-amount">R{{ number_format($order->tip->amount, 2) }}</span>
+            <span class="total-amount">TZS {{ number_format($order->tip->amount, 2) }}</span>
         </div>
         @endif
         <div class="total-row grand-total">
             <span class="total-label">TOTAL:</span>
-            <span class="total-amount">R{{ number_format($order->total + ($order->tip->amount ?? 0), 2) }}</span>
+            <span class="total-amount">TZS {{ number_format($order->total + ($order->tip->amount ?? 0), 2) }}</span>
         </div>
     </div>
 
@@ -298,7 +298,7 @@
             </div>
             <div class="payment-row">
                 <span class="info-label">Amount Paid:</span>
-                <span>R{{ number_format($payment->amount, 2) }}</span>
+                <span>TZS {{ number_format($payment->amount, 2) }}</span>
             </div>
             @if($payment->payment_method === 'cash')
                 @php
@@ -308,7 +308,7 @@
                 @if($change > 0)
                 <div class="payment-row">
                     <span class="info-label">Change:</span>
-                    <span>R{{ number_format($change, 2) }}</span>
+                    <span>TZS {{ number_format($change, 2) }}</span>
                 </div>
                 @endif
             @endif
@@ -328,11 +328,11 @@
     {{-- Footer --}}
     <div class="footer">
         <div class="thank-you">Thank You!</div>
-        <div class="tagline">Where Ocean Meets Flavor</div>
+        <div class="tagline">{{ \App\Models\Setting::get('business_tagline', 'Fine Dining Experience') }}</div>
         <div class="footer-info">
             Visit us again soon!<br>
-            www.seacliff-dining.co.za<br>
-            Follow us @seacliff_dining
+            {{ \App\Models\Setting::get('business_website', 'www.restaurant.com') }}<br>
+            {{ \App\Models\Setting::get('business_social', '') }}
         </div>
     </div>
 </body>

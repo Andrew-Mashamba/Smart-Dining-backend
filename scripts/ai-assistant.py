@@ -41,7 +41,7 @@ PORT = int(os.environ.get("AI_PORT", 8101))
 AGENT_BIN = os.environ.get("AGENT_CLI_PATH", "/usr/local/bin/agent")
 PROJECT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 MAX_PROMPT_LEN = 24000  # Increased for pre-fetched menu data
-TIMEOUT = 120  # Reduced — pre-fetched data means fewer tool calls
+TIMEOUT = 180  # 3 minutes — allows time for cold starts and heavy queries
 
 # ── Per-phone session locks ──────────────────────────────────────────
 _phone_locks: dict[str, threading.Lock] = {}

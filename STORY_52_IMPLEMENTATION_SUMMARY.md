@@ -291,8 +291,8 @@ php artisan migrate:fresh --seed
 - TableSeeder: 20 tables (10 indoor, 6 outdoor, 4 bar seats)
 
 **Default Credentials:**
-- admin@seacliff.com / password
-- manager@seacliff.com / password
+- admin@smartdining.com / password
+- manager@smartdining.com / password
 - All staff: password
 
 ### ✅ 13. Production Checklist (DEPLOYMENT.md)

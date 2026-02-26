@@ -1,7 +1,7 @@
 {
-  "projectName": "SeaCliff POS - Laravel Backend Implementation Plan",
+  "projectName": "Smart Dining POS - Laravel Backend Implementation Plan",
   "description": "## Table of Contents\n1. [Executive Summary](#1-executive-summary)\n2. [Current System Overview](#2-current-system-overview)\n3. [Architecture Design](#3-architecture-design)\n4. [Database Schema](#4-database-schema)\n5. [API Implementation](#5-api-implementation)\n6. [Chef Display System (KDS)](#6-chef-display-system-kds)\n7. [Bartender Display System](#7-bartender-display-system)\n8. [Manager Dashboard](#8-manager-dashboard)\n9. [Real-Time Features](#9-real-time-features)\n10. [Authentication & Authorization](#10-authentication--authorization)\n11. [Integration with Android POS](#11-integration-with-android-pos)\n12. [Deployment & DevOps](#12-deployment--devops)\n13. [Testing Strategy](#13-testing-strategy)\n14. [Implementation Phases](#14-implementation-phases)",
-  "branchName": "feature/seacliff-pos---laravel-backend-implementation-plan",
+  "branchName": "feature/smart-dining-pos---laravel-backend-implementation-plan",
   "techStack": {
     "framework": null,
     "frontend": null,
@@ -907,7 +907,7 @@
       "description": "Create comprehensive seeders to populate database with sample data for development and testing purposes.",
       "acceptance": [
         "Seeder: database/seeders/RoleAndUserSeeder.php creating admin, manager, waiter, chef, bartender users",
-        "Default credentials: admin@seacliff.com / password, manager@seacliff.com / password, etc.",
+        "Default credentials: admin@smartdining.com / password, manager@smartdining.com / password, etc.",
         "Seeder: database/seeders/MenuSeeder.php with 5 categories and 30+ menu items (appetizers, mains, desserts, drinks)",
         "Seeder: database/seeders/TableSeeder.php with 20 tables (indoor, outdoor, bar sections)",
         "Seeder: database/seeders/GuestSeeder.php with 50 sample guests with loyalty points",

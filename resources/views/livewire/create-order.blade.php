@@ -54,7 +54,7 @@
                             <div class="border border-gray-200 rounded-lg p-4 hover:border-gray-900 transition-colors cursor-pointer" wire:click="addItem({{ $item->id }})">
                                 <div class="flex justify-between items-start mb-2">
                                     <h3 class="font-semibold text-gray-900">{{ $item->name }}</h3>
-                                    <span class="text-lg font-bold text-gray-900">${{ number_format($item->price, 2) }}</span>
+                                    <span class="text-lg font-bold text-gray-900">TZS {{ number_format($item->price, 2) }}</span>
                                 </div>
                                 @if($item->description)
                                     <p class="text-sm text-gray-600 mb-2">{{ Str::limit($item->description, 60) }}</p>
@@ -151,8 +151,8 @@
                                                 </button>
                                             </div>
                                             <div class="text-right">
-                                                <div class="text-xs text-gray-600">${{ number_format($item['unit_price'], 2) }} each</div>
-                                                <div class="font-bold text-gray-900">${{ number_format($item['unit_price'] * $item['quantity'], 2) }}</div>
+                                                <div class="text-xs text-gray-600">TZS {{ number_format($item['unit_price'], 2) }} each</div>
+                                                <div class="font-bold text-gray-900">TZS {{ number_format($item['unit_price'] * $item['quantity'], 2) }}</div>
                                             </div>
                                         </div>
 
@@ -188,15 +188,15 @@
                         <div class="border-t border-gray-200 pt-4 mb-6 space-y-2">
                             <div class="flex justify-between text-sm">
                                 <span class="text-gray-600">Subtotal</span>
-                                <span class="font-medium text-gray-900">${{ number_format($subtotal, 2) }}</span>
+                                <span class="font-medium text-gray-900">TZS {{ number_format($subtotal, 2) }}</span>
                             </div>
                             <div class="flex justify-between text-sm">
                                 <span class="text-gray-600">Tax ({{ $taxRate * 100 }}%)</span>
-                                <span class="font-medium text-gray-900">${{ number_format($tax, 2) }}</span>
+                                <span class="font-medium text-gray-900">TZS {{ number_format($tax, 2) }}</span>
                             </div>
                             <div class="flex justify-between text-lg font-bold border-t border-gray-200 pt-2">
                                 <span class="text-gray-900">Total</span>
-                                <span class="text-gray-900">${{ number_format($total, 2) }}</span>
+                                <span class="text-gray-900">TZS {{ number_format($total, 2) }}</span>
                             </div>
                         </div>
                     @endif

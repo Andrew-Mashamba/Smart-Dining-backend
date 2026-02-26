@@ -83,9 +83,9 @@
                     <div class="flex justify-between items-start py-2 border-b border-gray-100 last:border-b-0">
                         <div class="flex-1">
                             <p class="text-sm font-medium text-gray-900">{{ $item->menuItem ? $item->menuItem->name : 'N/A' }}</p>
-                            <p class="text-xs text-gray-600">Qty: {{ $item->quantity }} × ${{ number_format($item->unit_price, 2) }}</p>
+                            <p class="text-xs text-gray-600">Qty: {{ $item->quantity }} × TZS {{ number_format($item->unit_price, 2) }}</p>
                         </div>
-                        <p class="text-sm font-semibold text-gray-900">${{ number_format($item->subtotal, 2) }}</p>
+                        <p class="text-sm font-semibold text-gray-900">TZS {{ number_format($item->subtotal, 2) }}</p>
                     </div>
                     @endforeach
                 </div>
@@ -98,29 +98,29 @@
                 <div class="space-y-3">
                     <div class="flex justify-between">
                         <span class="text-gray-900 font-medium">Subtotal:</span>
-                        <span class="text-gray-600">${{ number_format($order->subtotal, 2) }}</span>
+                        <span class="text-gray-600">TZS {{ number_format($order->subtotal, 2) }}</span>
                     </div>
 
                     <div class="flex justify-between">
                         <span class="text-gray-900 font-medium">Tax (18%):</span>
-                        <span class="text-gray-600">${{ number_format($order->tax, 2) }}</span>
+                        <span class="text-gray-600">TZS {{ number_format($order->tax, 2) }}</span>
                     </div>
 
                     <div class="flex justify-between pt-3 border-t border-gray-200">
                         <span class="text-lg font-bold text-gray-900">Total:</span>
-                        <span class="text-lg font-bold text-gray-900">${{ number_format($order->total, 2) }}</span>
+                        <span class="text-lg font-bold text-gray-900">TZS {{ number_format($order->total, 2) }}</span>
                     </div>
 
                     @if($totalPaid > 0)
                     <div class="flex justify-between pt-3 border-t border-gray-200">
                         <span class="text-gray-900 font-medium">Paid:</span>
-                        <span class="text-green-700 font-semibold">${{ number_format($totalPaid, 2) }}</span>
+                        <span class="text-green-700 font-semibold">TZS {{ number_format($totalPaid, 2) }}</span>
                     </div>
 
                     @if($remainingBalance > 0)
                     <div class="flex justify-between">
                         <span class="text-gray-900 font-medium">Balance Due:</span>
-                        <span class="text-red-700 font-semibold">${{ number_format($remainingBalance, 2) }}</span>
+                        <span class="text-red-700 font-semibold">TZS {{ number_format($remainingBalance, 2) }}</span>
                     </div>
                     @else
                     <div class="flex justify-between">
@@ -135,7 +135,7 @@
                     @if($order->tip)
                     <div class="flex justify-between pt-3 border-t border-gray-200">
                         <span class="text-gray-900 font-medium">Tip:</span>
-                        <span class="text-gray-600">${{ number_format($order->tip->amount, 2) }}</span>
+                        <span class="text-gray-600">TZS {{ number_format($order->tip->amount, 2) }}</span>
                     </div>
                     @endif
                 </div>
@@ -152,7 +152,7 @@
                             <p class="text-sm font-medium text-gray-900">{{ $this->getPaymentMethodName($payment->payment_method) }}</p>
                             <p class="text-xs text-gray-600">{{ $payment->created_at->format('M d, Y H:i') }}</p>
                         </div>
-                        <p class="text-sm font-semibold text-gray-900">${{ number_format($payment->amount, 2) }}</p>
+                        <p class="text-sm font-semibold text-gray-900">TZS {{ number_format($payment->amount, 2) }}</p>
                     </div>
                     @endforeach
                 </div>
@@ -247,7 +247,7 @@
                     <div class="mb-6">
                         <label class="block text-sm font-medium text-gray-900 mb-2">Payment Amount</label>
                         <div class="relative">
-                            <span class="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-600 font-semibold">$</span>
+                            <span class="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-600 font-semibold">TZS</span>
                             <input
                                 type="number"
                                 step="0.01"
@@ -257,7 +257,7 @@
                             >
                         </div>
                         @error('amount') <span class="text-red-600 text-xs mt-1 block">{{ $message }}</span> @enderror
-                        <p class="text-xs text-gray-600 mt-2">Remaining balance: ${{ number_format($remainingBalance, 2) }}</p>
+                        <p class="text-xs text-gray-600 mt-2">Remaining balance: TZS {{ number_format($remainingBalance, 2) }}</p>
                     </div>
 
                     <!-- Process Payment Button -->
@@ -293,7 +293,7 @@
                                 class="px-4 py-3 border-2 border-gray-300 rounded-lg hover:border-gray-900 transition-colors text-center"
                             >
                                 <div class="text-lg font-bold text-gray-900">{{ $percentage }}%</div>
-                                <div class="text-sm text-gray-600">${{ $amount }}</div>
+                                <div class="text-sm text-gray-600">TZS {{ $amount }}</div>
                             </button>
                             @endforeach
                         </div>
@@ -303,7 +303,7 @@
                     <div class="mb-4">
                         <label class="block text-sm font-medium text-gray-900 mb-2">Custom Tip Amount</label>
                         <div class="relative">
-                            <span class="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-600 font-semibold">$</span>
+                            <span class="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-600 font-semibold">TZS</span>
                             <input
                                 type="number"
                                 step="0.01"
@@ -345,7 +345,7 @@
                 </form>
                 @else
                 <div class="text-center py-4">
-                    <p class="text-gray-600 mb-4">Tip of <span class="font-semibold text-gray-900">${{ number_format($order->tip->amount, 2) }}</span> already added.</p>
+                    <p class="text-gray-600 mb-4">Tip of <span class="font-semibold text-gray-900">TZS {{ number_format($order->tip->amount, 2) }}</span> already added.</p>
                     <p class="text-sm text-gray-500">Thank you for your generosity!</p>
                 </div>
                 @endif

@@ -50,7 +50,8 @@ class WhatsAppService
             $query->where('status', 'available')->orderBy('name');
         }])->where('status', 'active')->get();
 
-        $menuText = "🍽️ *SEACLIFF DINING MENU* 🍽️\n\n";
+        $restaurantName = strtoupper(\App\Models\Setting::get('business_name', config('app.name', 'Smart Dining')));
+        $menuText = "🍽️ *{$restaurantName} DINING MENU* 🍽️\n\n";
 
         foreach ($categories as $category) {
             $menuText .= "*{$category->name}*\n";

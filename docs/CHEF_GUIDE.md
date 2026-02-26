@@ -1,4 +1,4 @@
-# SeaCliff POS - Chef Guide
+# Smart Dining POS - Chef Guide
 
 ## Table of Contents
 1. [Introduction](#introduction)
@@ -15,7 +15,7 @@
 
 ## Introduction
 
-Welcome to the SeaCliff POS Chef Guide. As a chef, you use the Kitchen Display System (KDS) to view incoming orders, manage preparation, and update order status in real-time.
+Welcome to the Smart Dining POS Chef Guide. As a chef, you use the Kitchen Display System (KDS) to view incoming orders, manage preparation, and update order status in real-time.
 
 ### Your Role
 As a **Chef**, you can:
@@ -33,7 +33,7 @@ As a **Chef**, you can:
 ## Getting Started
 
 ### Logging In
-1. Navigate to the SeaCliff POS login page
+1. Navigate to the Smart Dining POS login page
 2. Enter your chef credentials (email and password)
 3. Click "Login"
 4. You'll be automatically redirected to the Kitchen Display System
@@ -629,7 +629,7 @@ Common order abbreviations:
 
 **Document Version**: 1.0
 **Last Updated**: 2026-02-06
-**For**: SeaCliff POS v1.0
+**For**: Smart Dining POS v1.0
 **Role**: Chef
 
 *Related guides: [Admin Guide](ADMIN_GUIDE.md) | [Manager Guide](MANAGER_GUIDE.md) | [Waiter Guide](WAITER_GUIDE.md) | [Bartender Guide](BARTENDER_GUIDE.md)*

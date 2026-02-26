@@ -1,4 +1,4 @@
-@props(['title' => 'Sea Cliff Smart Dining'])
+@props(['title' => config('app.name', 'Smart Dining')])
 
 <!DOCTYPE html>
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}">

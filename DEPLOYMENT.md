@@ -1,6 +1,6 @@
 # Production Deployment Guide
 
-This guide covers the complete process for deploying the SeaCliff Dining hospitality management system to a production environment.
+This guide covers the complete process for deploying the Smart Dining hospitality management system to a production environment.
 
 ## Table of Contents
 
@@ -181,7 +181,7 @@ Edit `.env` and update the following critical values:
 
 ```bash
 # Application
-APP_NAME="SeaCliff Dining"
+APP_NAME="Smart Dining"
 APP_ENV=production
 APP_DEBUG=false
 APP_URL=https://yourdomain.com
@@ -190,7 +190,7 @@ APP_URL=https://yourdomain.com
 DB_CONNECTION=pgsql
 DB_HOST=127.0.0.1
 DB_PORT=5432
-DB_DATABASE=seacliff_dining_production
+DB_DATABASE=smart_dining_production
 DB_USERNAME=your_db_user
 DB_PASSWORD=your_secure_password
 
@@ -245,13 +245,13 @@ sudo chown deploy:www-data /var/www/html/.env
 sudo -u postgres psql
 
 -- Create database
-CREATE DATABASE seacliff_dining_production;
+CREATE DATABASE smart_dining_production;
 
 -- Create user
 CREATE USER your_db_user WITH PASSWORD 'your_secure_password';
 
 -- Grant privileges
-GRANT ALL PRIVILEGES ON DATABASE seacliff_dining_production TO your_db_user;
+GRANT ALL PRIVILEGES ON DATABASE smart_dining_production TO your_db_user;
 
 -- Exit psql
 \q
@@ -501,7 +501,7 @@ sudo systemctl restart php8.2-fpm
 
 ### 5. Nginx Security Configuration
 
-Create `/etc/nginx/sites-available/seacliff-dining`:
+Create `/etc/nginx/sites-available/smart-dining`:
 
 ```nginx
 server {
@@ -532,8 +532,8 @@ server {
     add_header Content-Security-Policy "default-src 'self' https: data: 'unsafe-inline' 'unsafe-eval';" always;
 
     # Logging
-    access_log /var/log/nginx/seacliff-access.log;
-    error_log /var/log/nginx/seacliff-error.log;
+    access_log /var/log/nginx/smart-dining-access.log;
+    error_log /var/log/nginx/smart-dining-error.log;
 
     location / {
         try_files $uri $uri/ /index.php?$query_string;
@@ -574,7 +574,7 @@ server {
 Enable the site:
 
 ```bash
-sudo ln -s /etc/nginx/sites-available/seacliff-dining /etc/nginx/sites-enabled/
+sudo ln -s /etc/nginx/sites-available/smart-dining /etc/nginx/sites-enabled/
 sudo nginx -t
 sudo systemctl reload nginx
 ```
@@ -648,7 +648,7 @@ BACKUP_DIR="/var/www/html/storage/backups"
 mkdir -p $BACKUP_DIR
 
 # PostgreSQL backup
-pg_dump -U your_db_user seacliff_dining_production | gzip > $BACKUP_DIR/db_backup_$DATE.sql.gz
+pg_dump -U your_db_user smart_dining_production | gzip > $BACKUP_DIR/db_backup_$DATE.sql.gz
 
 # Keep only last 7 days of backups
 find $BACKUP_DIR -name "db_backup_*.sql.gz" -mtime +7 -delete
@@ -686,10 +686,10 @@ tail -f /var/www/html/storage/logs/critical.log
 tail -f /var/www/html/storage/logs/worker.log
 
 # Nginx access logs
-tail -f /var/log/nginx/seacliff-access.log
+tail -f /var/log/nginx/smart-dining-access.log
 
 # Nginx error logs
-tail -f /var/log/nginx/seacliff-error.log
+tail -f /var/log/nginx/smart-dining-error.log
 ```
 
 ### 3. Optional: Install Sentry
@@ -820,7 +820,7 @@ sudo chmod -R 775 /var/www/html/bootstrap/cache
 tail -f /var/www/html/storage/logs/laravel.log
 
 # Check Nginx error log
-tail -f /var/log/nginx/seacliff-error.log
+tail -f /var/log/nginx/smart-dining-error.log
 
 # Check PHP-FPM log
 tail -f /var/log/php8.2-fpm.log

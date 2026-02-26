@@ -8,7 +8,7 @@
 
 ## Overview
 
-This document provides a comprehensive summary of the implementation of Story 51, which creates a complete user documentation and help system for the SeaCliff POS application.
+This document provides a comprehensive summary of the implementation of Story 51, which creates a complete user documentation and help system for the Smart Dining POS application.
 
 ---
 

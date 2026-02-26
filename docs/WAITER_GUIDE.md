@@ -1,4 +1,4 @@
-# SeaCliff POS - Waiter Guide
+# Smart Dining POS - Waiter Guide
 
 ## Table of Contents
 1. [Introduction](#introduction)
@@ -17,7 +17,7 @@
 
 ## Introduction
 
-Welcome to the SeaCliff POS Waiter Guide. As a waiter, you are the front line of customer service, handling orders, payments, and guest interactions through our POS system.
+Welcome to the Smart Dining POS Waiter Guide. As a waiter, you are the front line of customer service, handling orders, payments, and guest interactions through our POS system.
 
 ### Your Role
 As a **Waiter**, you can:
@@ -36,7 +36,7 @@ As a **Waiter**, you can:
 ## Getting Started
 
 ### Logging In
-1. Navigate to the SeaCliff POS login page
+1. Navigate to the Smart Dining POS login page
 2. Enter your email and password
 3. Click "Login"
 4. You'll be directed to the waiter dashboard
@@ -842,7 +842,7 @@ For issues you can't resolve:
 
 **Document Version**: 1.0
 **Last Updated**: 2026-02-06
-**For**: SeaCliff POS v1.0
+**For**: Smart Dining POS v1.0
 **Role**: Waiter
 
 *Related guides: [Admin Guide](ADMIN_GUIDE.md) | [Manager Guide](MANAGER_GUIDE.md) | [Chef Guide](CHEF_GUIDE.md) | [Bartender Guide](BARTENDER_GUIDE.md)*

@@ -426,7 +426,7 @@
                                     <div>
                                         <label for="bank_account_name" class="block text-sm font-medium text-gray-900 mb-2">Account Name</label>
                                         <input type="text" id="bank_account_name" wire:model="bank_account_name"
-                                            placeholder="e.g. SeaCliff Restaurant Ltd"
+                                            placeholder="e.g. My Restaurant Ltd"
                                             class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-500 text-gray-900">
                                         @error('bank_account_name') <span class="text-red-600 text-sm">{{ $message }}</span> @enderror
                                     </div>

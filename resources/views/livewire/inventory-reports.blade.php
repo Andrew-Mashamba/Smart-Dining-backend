@@ -90,7 +90,7 @@
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                     </svg>
                 </div>
-                <p class="text-3xl font-bold text-gray-900">${{ number_format($totalValue, 2) }}</p>
+                <p class="text-3xl font-bold text-gray-900">TZS {{ number_format($totalValue, 2) }}</p>
             </div>
 
             {{-- Total Restocks --}}
@@ -210,9 +210,9 @@
                                 <td class="px-6 py-4 whitespace-nowrap text-gray-700">{{ $item->stock_quantity }}</td>
                                 <td class="px-6 py-4 whitespace-nowrap text-gray-700">{{ $item->unit }}</td>
                                 <td class="px-6 py-4 whitespace-nowrap text-gray-700">{{ $item->low_stock_threshold }}</td>
-                                <td class="px-6 py-4 whitespace-nowrap text-gray-700">${{ number_format($item->price, 2) }}</td>
+                                <td class="px-6 py-4 whitespace-nowrap text-gray-700">TZS {{ number_format($item->price, 2) }}</td>
                                 <td class="px-6 py-4 whitespace-nowrap text-gray-900 font-semibold">
-                                    ${{ number_format($item->stock_quantity * $item->price, 2) }}
+                                    TZS {{ number_format($item->stock_quantity * $item->price, 2) }}
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap">
                                     @if($item->stock_quantity == 0)

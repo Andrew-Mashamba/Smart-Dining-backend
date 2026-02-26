@@ -1,4 +1,4 @@
-# SeaCliff POS - Manager Guide
+# Smart Dining POS - Manager Guide
 
 ## Table of Contents
 1. [Introduction](#introduction)
@@ -17,7 +17,7 @@
 
 ## Introduction
 
-Welcome to the SeaCliff POS Manager Guide. As a manager, you oversee daily restaurant operations including menu management, inventory control, table assignments, and business analytics.
+Welcome to the Smart Dining POS Manager Guide. As a manager, you oversee daily restaurant operations including menu management, inventory control, table assignments, and business analytics.
 
 ### Your Role
 As a **Manager**, you can:
@@ -37,7 +37,7 @@ As a **Manager**, you can:
 ## Getting Started
 
 ### Logging In
-1. Navigate to the SeaCliff POS login page
+1. Navigate to the Smart Dining POS login page
 2. Enter your manager credentials (email and password)
 3. Click "Login"
 4. You'll be redirected to the manager dashboard
@@ -1027,7 +1027,7 @@ For critical issues:
 
 ### Contact Information
 - Administrator: Contact via internal channels
-- Technical Support: support@seacliffpos.com
+- Technical Support: support@smartdining.com
 - Documentation: `/help`
 - Emergency: Contact restaurant owner/administrator
 
@@ -1063,7 +1063,7 @@ For critical issues:
 
 **Document Version**: 1.0
 **Last Updated**: 2026-02-06
-**For**: SeaCliff POS v1.0
+**For**: Smart Dining POS v1.0
 **Role**: Manager
 
 *Related guides: [Admin Guide](ADMIN_GUIDE.md) | [Waiter Guide](WAITER_GUIDE.md) | [Chef Guide](CHEF_GUIDE.md) | [Bartender Guide](BARTENDER_GUIDE.md)*

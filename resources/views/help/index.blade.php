@@ -25,7 +25,7 @@
                         </svg>
                     </div>
                     <div class="ml-3 flex-1">
-                        <h3 class="text-lg font-medium text-blue-900">Welcome to SeaCliff POS Help Center</h3>
+                        <h3 class="text-lg font-medium text-blue-900">Welcome to {{ config('app.name', 'Smart Dining') }} Help Center</h3>
                         <p class="mt-2 text-sm text-blue-700">
                             Find comprehensive guides, API documentation, and helpful tips for using the system effectively.
                             Each guide is tailored to your role and includes step-by-step instructions with screenshots.

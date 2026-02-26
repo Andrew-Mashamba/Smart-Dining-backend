@@ -1,4 +1,4 @@
-# SeaCliff POS - Bartender Guide
+# Smart Dining POS - Bartender Guide
 
 ## Table of Contents
 1. [Introduction](#introduction)
@@ -15,7 +15,7 @@
 
 ## Introduction
 
-Welcome to the SeaCliff POS Bartender Guide. As a bartender, you use the Bar Display System (BDS) to view incoming drink orders, manage preparation, and update order status in real-time.
+Welcome to the Smart Dining POS Bartender Guide. As a bartender, you use the Bar Display System (BDS) to view incoming drink orders, manage preparation, and update order status in real-time.
 
 ### Your Role
 As a **Bartender**, you can:
@@ -33,7 +33,7 @@ As a **Bartender**, you can:
 ## Getting Started
 
 ### Logging In
-1. Navigate to the SeaCliff POS login page
+1. Navigate to the Smart Dining POS login page
 2. Enter your bartender credentials (email and password)
 3. Click "Login"
 4. You'll be automatically redirected to the Bar Display System
@@ -379,4 +379,4 @@ In case of system failure:
 
 ---
 
-*This guide is part of the SeaCliff POS documentation suite. For more information, visit the help page at `/help`.*
+*This guide is part of the Smart Dining POS documentation suite. For more information, visit the help page at `/help`.*

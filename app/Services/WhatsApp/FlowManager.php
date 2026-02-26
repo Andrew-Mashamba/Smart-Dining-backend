@@ -3,6 +3,7 @@
 namespace App\Services\WhatsApp;
 
 use App\Models\Guest;
+use App\Models\Setting;
 use App\Models\Table;
 use Illuminate\Support\Facades\Log;
 
@@ -173,7 +174,7 @@ class FlowManager
 
         $this->whatsappService->sendListMessage(
             $guest->phone_number,
-            "Welcome to SeaCliff, {$name}! What would you like to do?",
+            "Welcome to " . Setting::get('business_name', config('app.name', 'Smart Dining')) . ", {$name}! What would you like to do?",
             'Main Menu',
             [
                 [

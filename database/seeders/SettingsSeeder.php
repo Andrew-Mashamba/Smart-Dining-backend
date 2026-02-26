@@ -15,7 +15,7 @@ class SettingsSeeder extends Seeder
     {
         $defaultSettings = [
             // Business Information
-            ['key' => 'business_name', 'value' => 'SeaCliff Restaurant & Bar', 'type' => 'string'],
+            ['key' => 'business_name', 'value' => 'Smart Dining Restaurant & Bar', 'type' => 'string'],
             ['key' => 'business_address', 'value' => '123 Ocean View Drive, Dar es Salaam, Tanzania', 'type' => 'string'],
             ['key' => 'business_phone', 'value' => '+255 22 123 4567', 'type' => 'string'],
             ['key' => 'business_email', 'value' => 'info@seacliff.com', 'type' => 'string'],

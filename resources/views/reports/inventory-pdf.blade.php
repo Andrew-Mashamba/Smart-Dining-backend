@@ -222,7 +222,7 @@
         <div class="summary-row">
             <div class="summary-card">
                 <h3>Total Value</h3>
-                <div class="value">${{ number_format($total_value, 2) }}</div>
+                <div class="value">TZS {{ number_format($total_value, 2) }}</div>
             </div>
             <div class="summary-card">
                 <h3>Restocks</h3>
@@ -305,8 +305,8 @@
                             <td class="text-right">{{ $item->stock_quantity }}</td>
                             <td>{{ $item->unit }}</td>
                             <td class="text-right">{{ $item->low_stock_threshold }}</td>
-                            <td class="text-right">${{ number_format($item->price, 2) }}</td>
-                            <td class="text-right font-bold">${{ number_format($item->stock_quantity * $item->price, 2) }}</td>
+                            <td class="text-right">TZS {{ number_format($item->price, 2) }}</td>
+                            <td class="text-right font-bold">TZS {{ number_format($item->stock_quantity * $item->price, 2) }}</td>
                             <td>
                                 @if($item->stock_quantity == 0)
                                     Out of Stock

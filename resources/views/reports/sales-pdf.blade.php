@@ -181,7 +181,7 @@
         <div class="summary-row">
             <div class="summary-card">
                 <h3>Total Revenue</h3>
-                <div class="value">${{ number_format($summary['total_revenue'], 2) }}</div>
+                <div class="value">TZS {{ number_format($summary['total_revenue'], 2) }}</div>
             </div>
             <div class="summary-card">
                 <h3>Total Orders</h3>
@@ -189,11 +189,11 @@
             </div>
             <div class="summary-card">
                 <h3>Avg Order Value</h3>
-                <div class="value">${{ number_format($summary['average_order_value'], 2) }}</div>
+                <div class="value">TZS {{ number_format($summary['average_order_value'], 2) }}</div>
             </div>
             <div class="summary-card">
                 <h3>Total Tax</h3>
-                <div class="value">${{ number_format($summary['total_tax'], 2) }}</div>
+                <div class="value">TZS {{ number_format($summary['total_tax'], 2) }}</div>
             </div>
         </div>
     </div>
@@ -207,7 +207,7 @@
                     @foreach($revenue_by_category as $category)
                         <div class="list-item">
                             <span>{{ $category->name }}</span>
-                            <span class="font-bold">${{ number_format($category->total_revenue, 2) }}</span>
+                            <span class="font-bold">TZS {{ number_format($category->total_revenue, 2) }}</span>
                         </div>
                     @endforeach
                 @else
@@ -223,7 +223,7 @@
                     @foreach($revenue_by_payment as $payment)
                         <div class="list-item">
                             <span style="text-transform: capitalize;">{{ str_replace('_', ' ', $payment->payment_method) }}</span>
-                            <span class="font-bold">${{ number_format($payment->total_amount, 2) }}</span>
+                            <span class="font-bold">TZS {{ number_format($payment->total_amount, 2) }}</span>
                         </div>
                     @endforeach
                 @else
@@ -248,7 +248,7 @@
                     @foreach($daily_revenue['labels'] as $index => $date)
                         <tr>
                             <td>{{ $date }}</td>
-                            <td class="text-right font-bold">${{ number_format($daily_revenue['data'][$index], 2) }}</td>
+                            <td class="text-right font-bold">TZS {{ number_format($daily_revenue['data'][$index], 2) }}</td>
                         </tr>
                     @endforeach
                 </tbody>
@@ -275,9 +275,9 @@
                     @foreach($top_items as $item)
                         <tr>
                             <td>{{ $item->name }}</td>
-                            <td class="text-right">${{ number_format($item->price, 2) }}</td>
+                            <td class="text-right">TZS {{ number_format($item->price, 2) }}</td>
                             <td class="text-right">{{ number_format($item->total_quantity) }}</td>
-                            <td class="text-right font-bold">${{ number_format($item->total_revenue, 2) }}</td>
+                            <td class="text-right font-bold">TZS {{ number_format($item->total_revenue, 2) }}</td>
                         </tr>
                     @endforeach
                 </tbody>

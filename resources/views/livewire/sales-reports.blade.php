@@ -61,7 +61,7 @@
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                     </svg>
                 </div>
-                <p class="text-3xl font-bold text-gray-900">${{ number_format($summary['total_revenue'], 2) }}</p>
+                <p class="text-3xl font-bold text-gray-900">TZS {{ number_format($summary['total_revenue'], 2) }}</p>
             </div>
 
             {{-- Total Orders --}}
@@ -83,7 +83,7 @@
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
                     </svg>
                 </div>
-                <p class="text-3xl font-bold text-gray-900">${{ number_format($summary['average_order_value'], 2) }}</p>
+                <p class="text-3xl font-bold text-gray-900">TZS {{ number_format($summary['average_order_value'], 2) }}</p>
             </div>
 
             {{-- Total Tax Collected --}}
@@ -94,7 +94,7 @@
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 14l6-6m-5.5.5h.01m4.99 5h.01M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16l3.5-2 3.5 2 3.5-2 3.5 2z"></path>
                     </svg>
                 </div>
-                <p class="text-3xl font-bold text-gray-900">${{ number_format($summary['total_tax'], 2) }}</p>
+                <p class="text-3xl font-bold text-gray-900">TZS {{ number_format($summary['total_tax'], 2) }}</p>
             </div>
         </div>
 
@@ -114,7 +114,7 @@
                     @forelse($revenueByCategory as $category)
                         <div class="flex items-center justify-between py-2 border-b border-gray-100 last:border-0">
                             <span class="text-gray-700">{{ $category->name }}</span>
-                            <span class="text-gray-900 font-semibold">${{ number_format($category->total_revenue, 2) }}</span>
+                            <span class="text-gray-900 font-semibold">TZS {{ number_format($category->total_revenue, 2) }}</span>
                         </div>
                     @empty
                         <p class="text-gray-500 text-center py-4">No category data available for this period</p>
@@ -129,7 +129,7 @@
                     @forelse($revenueByPayment as $payment)
                         <div class="flex items-center justify-between py-2 border-b border-gray-100 last:border-0">
                             <span class="text-gray-700 capitalize">{{ str_replace('_', ' ', $payment->payment_method) }}</span>
-                            <span class="text-gray-900 font-semibold">${{ number_format($payment->total_amount, 2) }}</span>
+                            <span class="text-gray-900 font-semibold">TZS {{ number_format($payment->total_amount, 2) }}</span>
                         </div>
                     @empty
                         <p class="text-gray-500 text-center py-4">No payment data available for this period</p>
@@ -155,9 +155,9 @@
                         @forelse($topItems as $item)
                             <tr class="hover:bg-gray-50">
                                 <td class="px-6 py-4 whitespace-nowrap text-gray-900">{{ $item->name }}</td>
-                                <td class="px-6 py-4 whitespace-nowrap text-gray-700">${{ number_format($item->price, 2) }}</td>
+                                <td class="px-6 py-4 whitespace-nowrap text-gray-700">TZS {{ number_format($item->price, 2) }}</td>
                                 <td class="px-6 py-4 whitespace-nowrap text-gray-700">{{ number_format($item->total_quantity) }}</td>
-                                <td class="px-6 py-4 whitespace-nowrap text-gray-900 font-semibold">${{ number_format($item->total_revenue, 2) }}</td>
+                                <td class="px-6 py-4 whitespace-nowrap text-gray-900 font-semibold">TZS {{ number_format($item->total_revenue, 2) }}</td>
                             </tr>
                         @empty
                             <tr>
@@ -218,7 +218,7 @@
                             displayColors: false,
                             callbacks: {
                                 label: function(context) {
-                                    return '$' + context.parsed.y.toFixed(2);
+                                    return 'TZS ' + context.parsed.y.toFixed(2);
                                 }
                             }
                         }
@@ -233,7 +233,7 @@
                             ticks: {
                                 color: '#6B7280',
                                 callback: function(value) {
-                                    return '$' + value.toFixed(0);
+                                    return 'TZS ' + value.toFixed(0);
                                 }
                             }
                         },

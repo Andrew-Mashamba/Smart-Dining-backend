@@ -211,7 +211,7 @@
 <body>
     <!-- Header -->
     <div class="header">
-        SeaCliff POS Documentation
+        {{ config('app.name', 'Smart Dining') }} Documentation
     </div>
 
     <!-- Footer -->
@@ -222,7 +222,7 @@
     <!-- Title Page -->
     <div class="title-page">
         <h1>{{ $title }}</h1>
-        <div class="subtitle">SeaCliff POS System</div>
+        <div class="subtitle">{{ config('app.name', 'Smart Dining') }} System</div>
         <div class="date">Generated: {{ date('F d, Y') }}</div>
     </div>
 
@@ -234,7 +234,7 @@
     <!-- Copyright Footer on Last Page -->
     <div style="margin-top: 3em; padding-top: 1em; border-top: 2px solid #e2e8f0;">
         <p style="text-align: center; color: #a0aec0; font-size: 9pt;">
-            © {{ date('Y') }} SeaCliff POS. All rights reserved.<br>
+            © {{ date('Y') }} {{ config('app.name', 'Smart Dining') }}. All rights reserved.<br>
             This documentation is confidential and proprietary.
         </p>
     </div>

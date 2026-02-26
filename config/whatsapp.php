@@ -91,7 +91,7 @@ return [
 
     'restaurant' => [
         'phone' => env('WHATSAPP_RESTAURANT_PHONE'),
-        'name' => env('WHATSAPP_RESTAURANT_NAME', 'SeaCliff Restaurant'),
+        'name' => env('WHATSAPP_RESTAURANT_NAME', 'Smart Dining'),
     ],
 
     /*

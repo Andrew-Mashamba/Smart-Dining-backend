@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SeaCliff Payment</title>
+    <title>{{ config('app.name', 'Smart Dining') }} - Payment</title>
     <script src="https://cdn.tailwindcss.com"></script>
     @if(!empty($clientSecret) && !empty($stripePublicKey))
         <script src="https://js.stripe.com/v3/"></script>
@@ -13,7 +13,7 @@
     <div class="bg-white rounded-2xl shadow-lg max-w-md w-full overflow-hidden">
         {{-- Header --}}
         <div class="bg-blue-600 text-white p-6 text-center">
-            <h1 class="text-2xl font-bold">SeaCliff Restaurant</h1>
+            <h1 class="text-2xl font-bold">{{ \App\Models\Setting::get('business_name', config('app.name', 'Smart Dining')) }}</h1>
             <p class="text-blue-100 mt-1">Secure Payment</p>
         </div>
 
@@ -149,7 +149,7 @@
                 @endif
 
                 <p class="text-xs text-gray-400 text-center mt-4">
-                    Secure payment powered by SeaCliff POS
+                    Secure payment powered by {{ config('app.name', 'Smart Dining') }}
                 </p>
             @endif
         </div>

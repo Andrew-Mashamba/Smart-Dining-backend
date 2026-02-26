@@ -1,4 +1,4 @@
-# SeaCliff POS - Administrator Guide
+# Smart Dining POS - Administrator Guide
 
 ## Table of Contents
 1. [Introduction](#introduction)
@@ -20,7 +20,7 @@
 
 ## Introduction
 
-Welcome to the SeaCliff POS Administrator Guide. As an administrator, you have complete access to all system features and configurations. This guide will help you manage your restaurant operations efficiently.
+Welcome to the Smart Dining POS Administrator Guide. As an administrator, you have complete access to all system features and configurations. This guide will help you manage your restaurant operations efficiently.
 
 ### Your Role
 As an **Admin**, you can:
@@ -38,7 +38,7 @@ As an **Admin**, you can:
 ## Getting Started
 
 ### Logging In
-1. Navigate to your SeaCliff POS URL
+1. Navigate to your Smart Dining POS URL
 2. Enter your admin credentials
 3. Click "Login"
 4. You'll be redirected to the admin dashboard
@@ -740,11 +740,11 @@ Change these immediately after installation:
 ### Contact Information
 For technical support or questions:
 - Documentation: `/help`
-- Support Email: support@seacliffpos.com
+- Support Email: support@smartdining.com
 - Emergency: Contact system administrator
 
 ---
 
 **Document Version**: 1.0
 **Last Updated**: 2026-02-06
-**For**: SeaCliff POS v1.0
+**For**: Smart Dining POS v1.0

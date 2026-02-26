@@ -56,7 +56,7 @@
                     @endif
                     <div class="flex justify-between pt-3 border-t border-gray-200">
                         <span class="text-lg font-bold text-gray-900">Amount Due:</span>
-                        <span class="text-lg font-bold text-gray-900">${{ number_format($amount, 2) }}</span>
+                        <span class="text-lg font-bold text-gray-900">TZS {{ number_format($amount, 2) }}</span>
                     </div>
                 </div>
             </div>
@@ -78,7 +78,7 @@
                     class="w-full mt-6 px-6 py-3 bg-gray-900 text-white rounded-lg hover:bg-gray-800 transition-colors font-semibold text-lg flex items-center justify-center"
                 >
                     <span id="spinner" class="hidden mr-3"></span>
-                    <span id="button-text">Pay ${{ number_format($amount, 2) }}</span>
+                    <span id="button-text">Pay TZS {{ number_format($amount, 2) }}</span>
                 </button>
 
                 <!-- Test Card Info -->

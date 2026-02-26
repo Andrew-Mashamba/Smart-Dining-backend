@@ -20,7 +20,7 @@
   - `DB_CONNECTION=pgsql`
   - `DB_HOST=127.0.0.1`
   - `DB_PORT=5432`
-  - `DB_DATABASE=seacliff_dining_production`
+  - `DB_DATABASE=smart_dining_production`
   - `DB_USERNAME=postgres`
   - Placeholder for `DB_PASSWORD` (to be set during deployment)
 
@@ -223,7 +223,7 @@ php artisan queue:work redis --sleep=3 --tries=3 --max-time=3600 --timeout=60
 
 **Slack Configuration** (`.env.production:30-35`):
 - `LOG_SLACK_WEBHOOK_URL=` (placeholder) ✅
-- `LOG_SLACK_USERNAME="SeaCliff Dining Alert"` ✅
+- `LOG_SLACK_USERNAME="Smart Dining Alert"` ✅
 - `LOG_SLACK_EMOJI=":rotating_light:"` ✅
 - `LOG_SLACK_LEVEL=error` ✅
 

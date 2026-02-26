@@ -21,7 +21,7 @@ APP_DEBUG=false
 DB_CONNECTION=pgsql
 DB_HOST=127.0.0.1
 DB_PORT=5432
-DB_DATABASE=seacliff_dining_production
+DB_DATABASE=smart_dining_production
 DB_USERNAME=postgres
 DB_PASSWORD=
 ```
@@ -259,7 +259,7 @@ LOG_CHANNEL=production
 LOG_STACK=daily,database,critical,slack,mail
 LOG_LEVEL=warning
 LOG_SLACK_WEBHOOK_URL=
-LOG_SLACK_USERNAME="SeaCliff Dining Alert"
+LOG_SLACK_USERNAME="Smart Dining Alert"
 LOG_SLACK_EMOJI=":rotating_light:"
 LOG_SLACK_LEVEL=error
 ```

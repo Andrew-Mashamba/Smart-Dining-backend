@@ -17,9 +17,9 @@
                 <!-- Logo -->
                 <div class="flex items-center gap-3">
                     <div class="w-8 h-8 bg-gray-900 rounded-lg flex items-center justify-center">
-                        <span class="text-white font-bold text-sm">SC</span>
+                        <span class="text-white font-bold text-sm">SD</span>
                     </div>
-                    <h1 class="text-xl font-bold text-gray-900">Sea Cliff Smart Dining</h1>
+                    <h1 class="text-xl font-bold text-gray-900">{{ config('app.name', 'Smart Dining') }}</h1>
                 </div>
             </div>
 

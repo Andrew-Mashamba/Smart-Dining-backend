@@ -73,7 +73,7 @@
                                 <div class="flex-1">
                                     <div class="flex items-center gap-3">
                                         <h3 class="font-semibold text-gray-900">{{ $item->name }}</h3>
-                                        <span class="text-sm font-bold text-gray-900">${{ number_format($item->price, 2) }}</span>
+                                        <span class="text-sm font-bold text-gray-900">TZS {{ number_format($item->price, 2) }}</span>
                                         @if($item->status === 'unavailable')
                                             <span class="px-2 py-1 text-xs font-medium text-gray-600 bg-gray-200 rounded">Unavailable</span>
                                         @endif

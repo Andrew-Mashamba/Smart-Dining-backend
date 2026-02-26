@@ -41,7 +41,7 @@
                     </div>
                     <div class="flex justify-between">
                         <span class="text-gray-600">Amount:</span>
-                        <span class="font-semibold text-gray-900">${{ number_format($paymentIntent->amount / 100, 2) }}</span>
+                        <span class="font-semibold text-gray-900">TZS {{ number_format($paymentIntent->amount / 100, 2) }}</span>
                     </div>
                     <div class="flex justify-between">
                         <span class="text-gray-600">Status:</span>

@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Events\PaymentReceived;
 use App\Http\Controllers\Controller;
 use App\Models\Payment;
+use App\Models\Setting;
 use App\Services\Payment\PaymentService;
 use App\Services\WhatsApp\WhatsAppService;
 use Illuminate\Http\JsonResponse;
@@ -81,7 +82,7 @@ class MpesaWebhookController extends Controller
                     $receipt = $metadata['MpesaReceiptNumber'] ?? 'N/A';
                     $this->whatsappService->sendTextMessage(
                         $guest->phone_number,
-                        "Payment received!\n\nAmount: TZS ".number_format($payment->amount, 0)."\nM-Pesa Receipt: {$receipt}\nOrder: #{$order->order_number}\n\nThank you for dining at SeaCliff!"
+                        "Payment received!\n\nAmount: TZS ".number_format($payment->amount, 0)."\nM-Pesa Receipt: {$receipt}\nOrder: #{$order->order_number}\n\nThank you for dining at " . Setting::get('business_name', config('app.name', 'Smart Dining')) . "!"
                     );
                 }
 

@@ -243,7 +243,7 @@
                                                         <span class="font-medium text-gray-900">Date:</span> {{ $order['date'] }}
                                                     </p>
                                                     <p class="text-sm text-gray-600">
-                                                        <span class="font-medium text-gray-900">Total:</span> ${{ number_format($order['total'], 2) }}
+                                                        <span class="font-medium text-gray-900">Total:</span> TZS {{ number_format($order['total'], 2) }}
                                                     </p>
                                                     <p class="text-sm text-gray-600">
                                                         <span class="font-medium text-gray-900">Items:</span> {{ $order['items_count'] }}

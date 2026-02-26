@@ -229,7 +229,7 @@
                                 </span>
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                                ${{ number_format($order->total, 2) }}
+                                TZS {{ number_format($order->total, 2) }}
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
                                 {{ $order->created_at->format('M d, Y H:i') }}

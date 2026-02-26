@@ -146,7 +146,7 @@ class PaymentLinkController extends Controller
                     $whatsappService = app(\App\Services\WhatsApp\WhatsAppService::class);
                     $whatsappService->sendTextMessage(
                         $guest->phone_number,
-                        "Payment received!\n\nAmount: TZS ".number_format($payment->amount, 0)."\nOrder: #{$order->order_number}\n\nThank you for dining at SeaCliff!"
+                        "Payment received!\n\nAmount: TZS ".number_format($payment->amount, 0)."\nOrder: #{$order->order_number}\n\nThank you for dining at " . Setting::get('business_name', config('app.name', 'Smart Dining')) . "!"
                     );
                 } catch (\Exception $e) {
                     Log::warning('Failed to send WhatsApp receipt after link payment', [

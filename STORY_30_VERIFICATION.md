@@ -232,4 +232,4 @@ The payment processing system includes:
 
 ---
 *Generated: 2026-02-06*
-*Project: SeaCliff POS - Laravel Hospitality System*
+*Project: Smart Dining POS - Laravel Hospitality System*

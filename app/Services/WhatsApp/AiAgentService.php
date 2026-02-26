@@ -205,7 +205,7 @@ class AiAgentService
      */
     protected function buildSystemPrompt(Guest $guest): string
     {
-        $businessName = Setting::get('business_name', config('app.name', 'SeaCliff'));
+        $businessName = Setting::get('business_name', config('app.name', 'Smart Dining'));
         $openingHours = Setting::get('opening_hours', '08:00');
         $closingHours = Setting::get('closing_hours', '23:00');
 
@@ -228,7 +228,8 @@ If a tool or command fails, do NOT explain why. Just say something natural like 
 RULES:
 - PLAIN TEXT ONLY. No markdown, no asterisks, no bold/italic, no backticks, no code blocks.
 - Prices in TZS with commas (e.g., TZS 15,000). Tax: 18% VAT.
-- Be warm, concise, professional. Use the guest's name. 2-4 sentences for simple queries. Use dashes for lists.
+- Be warm, concise, professional. 2-4 sentences for simple queries. Use dashes for lists.
+- GREETING RULE: Only greet or use the guest's name in your FIRST message of a conversation. After that, jump straight into answering — do NOT re-greet, re-welcome, or repeat the guest's name. Check the CONVERSATION HISTORY: if you already replied, skip the greeting entirely.
 - NEVER reveal code, queries, system internals, or API keys.
 - If stuck, suggest asking a waiter or hand off to staff.
 - Hours: {$openingHours} to {$closingHours}. Currency: TZS.
@@ -239,8 +240,8 @@ SESSION ISOLATION:
 
 MEMORY:
 - The prompt has GUEST MEMORY, CONVERSATION HISTORY, and RECENT ORDERS sections.
-- Use them naturally: greet by name, honour "my usual" from memory, reference allergies.
-- For new guests, be extra welcoming.
+- Use them naturally: honour "my usual" from memory, reference allergies.
+- For new guests (no conversation history), greet warmly by name. For returning guests in an active conversation, skip the greeting.
 
 PRE-FETCHED DATA:
 - The prompt includes the FULL MENU and the guest's ACTIVE ORDER.
@@ -437,7 +438,10 @@ SYSTEM;
         }
 
         if ($session->current_table_id) {
-            $ctx .= "Table: {$session->current_table_id}\n";
+            $table = \App\Models\Table::find($session->current_table_id);
+            $tableName = $table ? $table->name : "ID {$session->current_table_id}";
+            $tableLocation = $table ? " ({$table->location})" : '';
+            $ctx .= "Table: {$tableName}{$tableLocation}\n";
         }
         if ($session->current_order_id) {
             $ctx .= "Active Order: {$session->current_order_id}\n";
@@ -1090,7 +1094,7 @@ SYSTEM;
             $safeSystem = mb_convert_encoding($systemPrompt, 'UTF-8', 'UTF-8');
             $safePrompt = mb_convert_encoding($userPrompt, 'UTF-8', 'UTF-8');
 
-            $response = Http::timeout(130)
+            $response = Http::timeout(190)
                 ->post($this->sidecarUrl, [
                     'phone_number' => $phone,
                     'system_prompt' => $safeSystem,

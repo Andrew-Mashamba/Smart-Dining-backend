@@ -264,7 +264,9 @@ class GuestMemoryService
             $lines[] = "Favorite table: {$profile['favorite_table']}";
         }
         if (isset($profile['last_table_id'])) {
-            $lines[] = "Last table ID: {$profile['last_table_id']}";
+            $lastTable = \App\Models\Table::find($profile['last_table_id']);
+            $lastTableName = $lastTable ? $lastTable->name : "ID {$profile['last_table_id']}";
+            $lines[] = "Last table: {$lastTableName}";
         }
 
         // Payment preference
@@ -347,20 +349,22 @@ class GuestMemoryService
             return '';
         }
 
-        $lines = ["=== RECENT ORDERS ==="];
+        $lines = ["=== PAST ORDER HISTORY (for reference only — these are NOT current active orders) ==="];
 
         foreach ($orders as $order) {
-            $date = \Carbon\Carbon::parse($order['created_at'])->format('M j');
+            $date = \Carbon\Carbon::parse($order['created_at'])->format('M j, Y');
             $status = $order['status'];
             $total = number_format($order['total'] ?? 0);
             $items = collect($order['order_items'] ?? [])
                 ->map(fn ($oi) => ($oi['menu_item']['name'] ?? 'Unknown') . ' x' . $oi['quantity'])
                 ->implode(', ');
+            $orderNum = $order['order_number'] ?? 'N/A';
 
-            $lines[] = "- {$date}: {$items} (TZS {$total}, {$status})";
+            $lines[] = "- {$date}: #{$orderNum} — {$items} (TZS {$total}, {$status})";
         }
 
-        $lines[] = "=== END RECENT ORDERS ===";
+        $lines[] = "NOTE: Only refer to these as past orders. The guest's CURRENT active order is in the ACTIVE ORDER section above (if any). If there is no ACTIVE ORDER section, the guest has NO current order.";
+        $lines[] = "=== END PAST ORDER HISTORY ===";
 
         return implode("\n", $lines);
     }

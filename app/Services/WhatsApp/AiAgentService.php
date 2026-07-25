@@ -2,25 +2,11 @@
 
 namespace App\Services\WhatsApp;
 
-use App\Jobs\SendFcmNotification;
-use App\Models\Feedback;
 use App\Models\Guest;
 use App\Models\GuestConversation;
-use App\Models\MenuCategory;
-use App\Models\MenuItem;
-use App\Models\Order;
-use App\Models\Payment;
-use App\Models\Promotion;
-use App\Models\Reservation;
 use App\Models\Setting;
-use App\Models\Staff;
-use App\Models\Table;
-use App\Notifications\AiStaffNotification;
-use Barryvdh\DomPDF\Facade\Pdf;
-use Carbon\Carbon;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Storage;
 
 class AiAgentService
 {
@@ -463,179 +449,28 @@ SYSTEM;
         return implode("\n\n", array_filter($parts));
     }
 
-    /**
-     * Pre-fetch full menu grouped by category.
-     * Included in every prompt so the AI never needs to query menu_items.
-     */
+    /** Stub: no menu in bank context. */
     protected function buildMenuContext(): string
     {
-        $categories = MenuCategory::where('status', 'active')
-            ->orderBy('display_order')
-            ->get(['id', 'name']);
-
-        if ($categories->isEmpty()) {
-            return '';
-        }
-
-        $lines = ['=== MENU (use this data — do NOT query the database for menu info) ==='];
-
-        foreach ($categories as $cat) {
-            $items = MenuItem::where('category_id', $cat->id)
-                ->where('status', 'available')
-                ->get(['id', 'name', 'price', 'description', 'stock_quantity', 'low_stock_threshold']);
-
-            $unavailable = MenuItem::where('category_id', $cat->id)
-                ->where('status', 'unavailable')
-                ->get(['id', 'name', 'price']);
-
-            if ($items->isEmpty() && $unavailable->isEmpty()) {
-                continue;
-            }
-
-            $lines[] = "\n{$cat->name}:";
-            foreach ($items as $item) {
-                $price = number_format($item->price);
-                $desc = $item->description ? " — {$item->description}" : '';
-                $stockWarning = '';
-                if ($item->stock_quantity !== null && $item->low_stock_threshold !== null
-                    && $item->stock_quantity <= $item->low_stock_threshold) {
-                    $stockWarning = " [LOW STOCK: {$item->stock_quantity} left]";
-                }
-                $lines[] = "- [{$item->id}] {$item->name}: TZS {$price}{$desc}{$stockWarning}";
-            }
-
-            foreach ($unavailable as $item) {
-                $price = number_format($item->price);
-                $lines[] = "- [UNAVAILABLE] {$item->name}: TZS {$price}";
-            }
-        }
-
-        $lines[] = '=== END MENU ===';
-
-        return implode("\n", $lines);
+        return '';
     }
 
-    /**
-     * Pre-fetch the guest's active order with items.
-     */
+    /** Stub: no order context in bank. */
     protected function buildActiveOrderContext(int $orderId): string
     {
-        $order = Order::with(['orderItems.menuItem:id,name,price', 'waiter:id,name'])
-            ->find($orderId);
-
-        if (! $order) {
-            return '';
-        }
-
-        $lines = ["=== ACTIVE ORDER (#{$order->order_number}, status: {$order->status}) ==="];
-
-        // Order type and delivery details
-        if ($order->order_type && $order->order_type !== 'dine_in') {
-            $lines[] = 'Order Type: ' . ucfirst(str_replace('_', ' ', $order->order_type));
-            if ($order->delivery_address) {
-                $lines[] = "Delivery Address: {$order->delivery_address}";
-            }
-            if ($order->delivery_phone) {
-                $lines[] = "Delivery Phone: {$order->delivery_phone}";
-            }
-            if ($order->estimated_ready_at) {
-                $lines[] = 'Estimated Ready: ' . Carbon::parse($order->estimated_ready_at)->format('g:i A');
-            }
-        }
-
-        // Assigned waiter
-        if ($order->waiter) {
-            $lines[] = "Assigned Waiter: {$order->waiter->name} (ID: {$order->waiter_id})";
-        }
-
-        foreach ($order->orderItems as $oi) {
-            $name = $oi->menuItem->name ?? 'Unknown';
-            $lines[] = "- {$name} x{$oi->quantity} = TZS " . number_format($oi->subtotal) . " ({$oi->prep_status})";
-        }
-
-        $lines[] = "Subtotal: TZS " . number_format($order->subtotal);
-        $lines[] = "Tax (18%): TZS " . number_format($order->tax);
-        $lines[] = "Total: TZS " . number_format($order->total);
-        $lines[] = '=== END ACTIVE ORDER ===';
-
-        return implode("\n", $lines);
+        return '';
     }
 
-    /**
-     * Pre-fetch payment status for the active order.
-     * Checks the payments table so the AI knows whether payment
-     * has been made, is pending, or hasn't been attempted yet.
-     */
+    /** Stub: no payment status in bank. */
     protected function buildPaymentStatusContext(int $orderId): string
     {
-        $order = Order::find($orderId);
-        if (! $order) {
-            return '';
-        }
-
-        $payments = Payment::where('order_id', $orderId)
-            ->orderByDesc('created_at')
-            ->get(['id', 'payment_method', 'amount', 'status', 'transaction_id', 'created_at', 'completed_at']);
-
-        $lines = ['=== PAYMENT STATUS FOR THIS ORDER ==='];
-        $lines[] = "Order Total: TZS " . number_format($order->total);
-
-        if ($payments->isEmpty()) {
-            $lines[] = "Payment: NO PAYMENT RECORDED YET.";
-            $lines[] = '=== END PAYMENT STATUS ===';
-
-            return implode("\n", $lines);
-        }
-
-        $totalPaid = $payments->where('status', 'completed')->sum('amount');
-        $pending = $payments->where('status', 'pending');
-        $failed = $payments->where('status', 'failed');
-        $balance = $order->total - $totalPaid;
-
-        foreach ($payments as $p) {
-            $method = strtoupper($p->payment_method);
-            $amt = 'TZS ' . number_format($p->amount);
-            $status = strtoupper($p->status);
-            $time = \Carbon\Carbon::parse($p->created_at)->diffForHumans();
-            $txn = $p->transaction_id ? " (Ref: {$p->transaction_id})" : '';
-            $lines[] = "- {$method}: {$amt} — {$status} ({$time}){$txn}";
-        }
-
-        $lines[] = "Total Paid: TZS " . number_format($totalPaid);
-
-        if ($balance > 0) {
-            $lines[] = "Balance Due: TZS " . number_format($balance);
-        } elseif ($balance <= 0) {
-            $lines[] = "FULLY PAID.";
-        }
-
-        if ($pending->isNotEmpty()) {
-            $lines[] = "Note: {$pending->count()} payment(s) still pending confirmation.";
-        }
-
-        $lines[] = '=== END PAYMENT STATUS ===';
-
-        return implode("\n", $lines);
+        return '';
     }
 
-    /**
-     * Pre-fetch available tables summary.
-     */
+    /** Stub: no tables in bank. */
     protected function buildTablesContext(): string
     {
-        $tables = Table::where('status', 'available')
-            ->get(['id', 'name', 'capacity', 'location']);
-
-        if ($tables->isEmpty()) {
-            return "TABLES: No tables currently available.";
-        }
-
-        $summary = $tables->groupBy('location')->map(function ($group, $location) {
-            $list = $group->map(fn ($t) => "{$t->name}(seats {$t->capacity})")->implode(', ');
-            return ucfirst($location) . ": {$list}";
-        })->implode(' | ');
-
-        return "AVAILABLE TABLES: {$summary}";
+        return '';
     }
 
     /**
@@ -699,370 +534,70 @@ SYSTEM;
         return implode("\n", $lines);
     }
 
-    /**
-     * Send QR code images for all enabled payment methods.
-     */
+    /** Stub: payment QR sending can be reimplemented for bank. */
     protected function sendPaymentQRCodes(string $phone): void
     {
-        $methods = [
-            ['key' => 'vodacom', 'label' => 'VodaCom M-Pesa'],
-            ['key' => 'yas', 'label' => 'Yas'],
-            ['key' => 'airtel', 'label' => 'AirTel Money'],
-            ['key' => 'bank', 'label' => Setting::get('bank_name', 'Bank')],
-        ];
-
-        foreach ($methods as $method) {
-            $enabled = (bool) Setting::get("{$method['key']}_enabled", false);
-            $qrPath = Setting::get("{$method['key']}_qr_code", '');
-
-            if (! $enabled || ! $qrPath || ! Storage::disk('public')->exists($qrPath)) {
-                continue;
-            }
-
-            $qrUrl = url('storage/' . $qrPath);
-            $lipa = Setting::get("{$method['key']}_lipa_namba", '');
-            $caption = "{$method['label']} - Lipa Namba: {$lipa}";
-
-            try {
-                $this->whatsappService->sendImageMessage($phone, $qrUrl, $caption);
-
-                Log::channel('whatsapp')->info('Payment QR sent', [
-                    'phone' => $phone,
-                    'method' => $method['key'],
-                    'url' => $qrUrl,
-                ]);
-            } catch (\Exception $e) {
-                Log::channel('whatsapp')->error('Failed to send payment QR', [
-                    'phone' => $phone,
-                    'method' => $method['key'],
-                    'error' => $e->getMessage(),
-                ]);
-            }
-        }
+        // No-op; reimplement in bank context if needed.
     }
 
-    /**
-     * Parse {{NOTIFY_X:message}} tags from AI response, dispatch notifications,
-     * and return the cleaned response text.
-     */
+    /** Strip NOTIFY tags from response (staff notifications stubbed in bank). */
     protected function parseAndDispatchNotifications(string $response, Guest $guest): string
     {
         $pattern = '/\{\{NOTIFY_(WAITER|MANAGER|KITCHEN|BAR):(.+?)\}\}/s';
-
-        if (! preg_match_all($pattern, $response, $matches, PREG_SET_ORDER)) {
-            return $response;
+        if (preg_match_all($pattern, $response, $matches, PREG_SET_ORDER)) {
+            foreach ($matches as $match) {
+                $response = str_replace($match[0], '', $response);
+            }
+            $response = preg_replace('/\n{3,}/', "\n\n", $response);
         }
-
-        foreach ($matches as $match) {
-            $target = $match[1]; // WAITER, MANAGER, KITCHEN, BAR
-            $message = trim($match[2]);
-
-            $this->dispatchStaffNotification($target, $message, $guest);
-
-            // Strip the tag from the response
-            $response = str_replace($match[0], '', $response);
-        }
-
-        // Collapse any leftover blank lines from stripped tags
-        $response = preg_replace('/\n{3,}/', "\n\n", $response);
-
         return $response;
     }
 
-    /**
-     * Dispatch an FCM push notification + store a DB notification for the target role.
-     */
+    /** Stub: no staff notifications in bank (reimplement with User/roles if needed). */
     protected function dispatchStaffNotification(string $target, string $message, Guest $guest): void
     {
-        $context = $this->buildNotificationContext($guest);
-
-        $titleMap = [
-            'WAITER' => 'Guest Request',
-            'MANAGER' => 'Manager Alert',
-            'KITCHEN' => 'Kitchen Alert',
-            'BAR' => 'Bar Alert',
-        ];
-
-        $data = [
-            'title' => 'AI: ' . ($titleMap[$target] ?? 'Staff Alert'),
-            'body' => $message,
-            'type' => 'ai_staff_alert',
-            'target_role' => strtolower($target),
-            'guest_name' => $context['guest_name'],
-            'guest_phone' => $context['guest_phone'],
-            'order_id' => (string) ($context['order_id'] ?? ''),
-            'order_number' => $context['order_number'] ?? '',
-            'table_id' => (string) ($context['table_id'] ?? ''),
-            'table_name' => $context['table_name'] ?? '',
-            'source' => 'ai_chatbot',
-            'timestamp' => now()->toISOString(),
-        ];
-
-        // Resolve staff IDs based on target role
-        $staffIds = match ($target) {
-            'WAITER' => $this->resolveWaiterIds($context),
-            'MANAGER' => Staff::whereIn('role', ['manager', 'admin'])
-                ->where('status', 'active')->pluck('id')->toArray(),
-            'KITCHEN' => Staff::where('role', 'chef')
-                ->where('status', 'active')->pluck('id')->toArray(),
-            'BAR' => Staff::where('role', 'bartender')
-                ->where('status', 'active')->pluck('id')->toArray(),
-            default => [],
-        };
-
-        if (empty($staffIds)) {
-            Log::channel('whatsapp')->warning("AI Notification: no active staff for target '{$target}'");
-
-            return;
-        }
-
-        // Dispatch FCM push notification
-        SendFcmNotification::dispatch('staff_members', $staffIds, $data)
-            ->onQueue('notifications');
-
-        // Store DB notification for each staff member
-        $this->storeNotificationForStaff($staffIds, $target, $message, $context);
-
-        Log::channel('whatsapp')->info('AI Notification dispatched', [
-            'target' => $target,
-            'staff_count' => count($staffIds),
-            'message' => mb_substr($message, 0, 100),
-            'guest' => $context['guest_name'],
-        ]);
+        Log::channel('whatsapp')->info('AI staff notification (stubbed)', ['target' => $target, 'message' => mb_substr($message, 0, 80)]);
     }
 
-    /**
-     * Resolve waiter IDs: prefer assigned waiter, fall back to all active waiters.
-     */
-    protected function resolveWaiterIds(array $context): array
-    {
-        if (! empty($context['waiter_id'])) {
-            return [$context['waiter_id']];
-        }
-
-        return Staff::where('role', 'waiter')
-            ->where('status', 'active')
-            ->pluck('id')
-            ->toArray();
-    }
-
-    /**
-     * Store a Laravel database notification for each targeted staff member.
-     */
-    protected function storeNotificationForStaff(array $staffIds, string $target, string $message, array $context): void
-    {
-        $notificationType = 'ai_' . strtolower($target) . '_alert';
-
-        $staffMembers = Staff::whereIn('id', $staffIds)->get();
-
-        foreach ($staffMembers as $staff) {
-            $staff->notify(new AiStaffNotification($notificationType, $message, $context));
-        }
-    }
-
-    /**
-     * Gather current session context for notification payloads.
-     */
+    /** Stub. */
     protected function buildNotificationContext(Guest $guest): array
     {
-        $session = $this->conversationManager->getSession($guest->phone_number);
-        $order = $session->current_order_id ? Order::find($session->current_order_id) : null;
-        $table = $session->current_table_id ? Table::find($session->current_table_id) : null;
-
         return [
             'guest_id' => $guest->id,
             'guest_name' => $guest->name ?? 'Guest',
             'guest_phone' => $guest->phone_number,
-            'order_id' => $order?->id,
-            'order_number' => $order?->order_number,
-            'table_id' => $table?->id,
-            'table_name' => $table?->name,
-            'waiter_id' => $order?->waiter_id,
         ];
     }
 
-    /**
-     * Handle human handoff — notify staff and log.
-     */
+    /** Stub: handoff can be reimplemented for bank staff. */
     protected function handleHumanHandoff(Guest $guest, string $reason): void
     {
-        $context = $this->buildNotificationContext($guest);
-
-        $staffIds = Staff::whereIn('role', ['waiter', 'manager', 'admin'])
-            ->where('status', 'active')
-            ->pluck('id')->toArray();
-
-        if (empty($staffIds)) {
-            Log::channel('whatsapp')->warning('AI Handoff: no active staff found');
-
-            return;
-        }
-
-        $data = [
-            'title' => 'AI: Human Handoff Requested',
-            'body' => "Guest {$context['guest_name']} needs human assistance: {$reason}",
-            'type' => 'ai_handoff_request',
-            'target_role' => 'waiter',
-            'guest_name' => $context['guest_name'],
-            'guest_phone' => $context['guest_phone'],
-            'order_id' => (string) ($context['order_id'] ?? ''),
-            'order_number' => $context['order_number'] ?? '',
-            'source' => 'ai_chatbot',
-            'timestamp' => now()->toISOString(),
-        ];
-
-        SendFcmNotification::dispatch('staff_members', $staffIds, $data)->onQueue('notifications');
-        $this->storeNotificationForStaff($staffIds, 'WAITER', "HANDOFF: {$reason}", $context);
-
-        Log::channel('whatsapp')->info('AI Handoff dispatched', [
-            'guest_id' => $guest->id,
-            'reason' => $reason,
-            'staff_count' => count($staffIds),
-        ]);
+        Log::channel('whatsapp')->info('AI handoff requested (stubbed)', ['guest_id' => $guest->id, 'reason' => $reason]);
     }
 
-    /**
-     * Generate and send receipt PDF via WhatsApp.
-     */
+    /** Stub: no receipt in bank context. */
     protected function sendReceiptPdf(string $phone, Guest $guest): void
     {
-        $session = $this->conversationManager->getSession($phone);
-        if (! $session->current_order_id) {
-            return;
-        }
-
-        $order = Order::with(['orderItems.menuItem', 'table', 'waiter', 'payments', 'tip'])
-            ->find($session->current_order_id);
-        if (! $order) {
-            return;
-        }
-
-        try {
-            $pdf = Pdf::loadView('receipts.order-receipt', compact('order'));
-            $pdf->setPaper([0, 0, 226.77, 841.89], 'portrait');
-
-            $filename = "receipt-{$order->order_number}.pdf";
-            $path = "receipts/{$filename}";
-            Storage::disk('public')->put($path, $pdf->output());
-
-            $pdfUrl = url("storage/{$path}");
-            $this->whatsappService->sendDocumentMessage(
-                $phone,
-                $pdfUrl,
-                "Receipt for Order #{$order->order_number}",
-                $filename
-            );
-
-            Log::channel('whatsapp')->info('Receipt PDF sent', [
-                'phone' => $phone,
-                'order' => $order->order_number,
-            ]);
-        } catch (\Exception $e) {
-            Log::channel('whatsapp')->error('Failed to send receipt PDF', [
-                'phone' => $phone,
-                'error' => $e->getMessage(),
-            ]);
-        }
     }
 
-    /**
-     * Save guest feedback to the database.
-     */
+    /** Stub: feedback can be reimplemented for bank. */
     protected function saveFeedback(Guest $guest, int $rating, string $comment): void
     {
-        $session = $this->conversationManager->getSession($guest->phone_number);
-
-        Feedback::create([
-            'guest_id' => $guest->id,
-            'order_id' => $session->current_order_id,
-            'rating' => $rating,
-            'comment' => $comment ?: null,
-            'source' => 'whatsapp',
-        ]);
-
         $profile = $guest->preferences ?? [];
-        $profile['last_feedback'] = [
-            'rating' => $rating,
-            'date' => now()->toDateString(),
-        ];
+        $profile['last_feedback'] = ['rating' => $rating, 'date' => now()->toDateString()];
         $guest->update(['preferences' => $profile]);
-
-        Log::channel('whatsapp')->info('Guest feedback saved', [
-            'guest_id' => $guest->id,
-            'rating' => $rating,
-        ]);
     }
 
-    /**
-     * Build upcoming reservations context for the prompt.
-     */
+    /** Stub: no reservations in bank. */
     protected function buildReservationContext(Guest $guest): string
     {
-        $upcoming = Reservation::where('guest_id', $guest->id)
-            ->where('reservation_date', '>=', today())
-            ->whereIn('status', ['pending', 'confirmed'])
-            ->orderBy('reservation_date')
-            ->orderBy('reservation_time')
-            ->get(['id', 'reference_number', 'reservation_date', 'reservation_time',
-                'party_size', 'location', 'status', 'special_requests']);
-
-        if ($upcoming->isEmpty()) {
-            return '';
-        }
-
-        $lines = ['=== UPCOMING RESERVATIONS ==='];
-        foreach ($upcoming as $res) {
-            $date = Carbon::parse($res->reservation_date)->format('D, M j');
-            $time = Carbon::parse($res->reservation_time)->format('g:i A');
-            $lines[] = "- [{$res->reference_number}] {$date} at {$time}, {$res->party_size} guests, "
-                . ucfirst($res->location) . " ({$res->status})"
-                . ($res->special_requests ? " Note: {$res->special_requests}" : '');
-        }
-        $lines[] = '=== END RESERVATIONS ===';
-
-        return implode("\n", $lines);
+        return '';
     }
 
-    /**
-     * Build promotions and specials context for the prompt.
-     */
+    /** Stub: no promotions in bank. */
     protected function buildPromotionsContext(): string
     {
-        $promotions = Promotion::active()->forToday()->get();
-
-        if ($promotions->isEmpty()) {
-            return '';
-        }
-
-        $lines = [];
-
-        foreach ($promotions as $promo) {
-            $label = strtoupper(str_replace('_', ' ', $promo->type));
-            $detail = $promo->title;
-
-            if ($promo->description) {
-                $detail .= ' — ' . $promo->description;
-            }
-
-            if ($promo->discount_value) {
-                $discount = $promo->discount_type === 'percentage'
-                    ? $promo->discount_value . '% off'
-                    : 'TZS ' . number_format($promo->discount_value) . ' off';
-                $detail .= " ({$discount})";
-            }
-
-            // Check if happy hour is currently active
-            if ($promo->type === 'happy_hour' && $promo->start_time && $promo->end_time) {
-                $now = now()->format('H:i:s');
-                $isActive = $now >= $promo->start_time && $now <= $promo->end_time;
-                $timeRange = substr($promo->start_time, 0, 5) . '-' . substr($promo->end_time, 0, 5);
-                $detail .= " [{$timeRange}]" . ($isActive ? ' [ACTIVE NOW]' : '');
-            }
-
-            $lines[] = "{$label}: {$detail}";
-        }
-
-        return "=== PROMOTIONS AND SPECIALS ===\n" . implode("\n", $lines) . "\n=== END PROMOTIONS ===";
+        return '';
     }
 
     /**

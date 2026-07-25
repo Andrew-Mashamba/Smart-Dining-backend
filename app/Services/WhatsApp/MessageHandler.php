@@ -12,17 +12,13 @@ class MessageHandler
 {
     protected WhatsAppService $whatsappService;
 
-    protected FlowManager $flowManager;
-
     protected ConversationManager $conversationManager;
 
     public function __construct(
         WhatsAppService $whatsappService,
-        FlowManager $flowManager,
         ConversationManager $conversationManager
     ) {
         $this->whatsappService = $whatsappService;
-        $this->flowManager = $flowManager;
         $this->conversationManager = $conversationManager;
     }
 
@@ -107,9 +103,6 @@ class MessageHandler
                 'phone' => $from,
             ]);
 
-            // Dispatch to the "ai" queue. The job handles AI processing
-            // and falls back to FlowManager if the AI fails.
-            // PHP-FPM worker is freed immediately.
             ProcessAiMessage::dispatch($guest->id, $messageData, $state);
 
             Log::channel('whatsapp')->info('--- MessageHandler::handle() DONE (queued for AI) ---');
@@ -117,15 +110,14 @@ class MessageHandler
             return;
         }
 
-        // ── FlowManager (synchronous, AI disabled) ──
-        Log::channel('whatsapp')->info('Dispatching to FlowManager::processMessage()');
-        $this->flowManager->processMessage($guest, $state, $messageData);
+        // AI disabled: send a short reply (no dining flows)
+        try {
+            $this->whatsappService->sendTextMessage($from, 'Thank you for your message. The assistant is currently being configured. Please try again later or contact support.');
+        } catch (\Exception $e) {
+            Log::channel('whatsapp')->warning('Failed to send AI-disabled reply', ['error' => $e->getMessage()]);
+        }
 
-        $newState = $this->conversationManager->getState($from);
-        Log::channel('whatsapp')->info('--- MessageHandler::handle() DONE ---', [
-            'previous_state' => $state,
-            'new_state' => $newState,
-        ]);
+        Log::channel('whatsapp')->info('--- MessageHandler::handle() DONE (AI disabled) ---');
     }
 
     /**

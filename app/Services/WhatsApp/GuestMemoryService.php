@@ -4,8 +4,6 @@ namespace App\Services\WhatsApp;
 
 use App\Models\Guest;
 use App\Models\GuestConversation;
-use App\Models\Order;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
 /**
@@ -126,65 +124,14 @@ class GuestMemoryService
     }
 
     /**
-     * Perform a deep profile update using order history.
-     * Should be called periodically (e.g., after every 5th conversation)
-     * to compute "usual order" from actual data.
+     * Perform a deep profile update (e.g. from transaction history in bank context).
+     * No-op when order/history tables are not used.
      */
     public function refreshProfileFromOrderHistory(Guest $guest): void
     {
         $profile = $guest->preferences ?? [];
-
-        // Compute usual order from last 20 orders
-        $topItems = DB::table('order_items')
-            ->join('orders', 'orders.id', '=', 'order_items.order_id')
-            ->join('menu_items', 'menu_items.id', '=', 'order_items.menu_item_id')
-            ->where('orders.guest_id', $guest->id)
-            ->where('orders.status', '!=', 'cancelled')
-            ->select('menu_items.id', 'menu_items.name', DB::raw('SUM(order_items.quantity) as total_qty'), DB::raw('COUNT(*) as order_count'))
-            ->groupBy('menu_items.id', 'menu_items.name')
-            ->orderByDesc('order_count')
-            ->limit(5)
-            ->get();
-
-        if ($topItems->isNotEmpty()) {
-            $profile['usual_orders'] = $topItems->map(fn ($item) => [
-                'item_id' => $item->id,
-                'name' => $item->name,
-                'frequency' => $item->order_count,
-            ])->toArray();
-        }
-
-        // Compute visit count
-        $profile['visit_count'] = Order::where('guest_id', $guest->id)
-            ->where('status', '!=', 'cancelled')
-            ->distinct('created_at')
-            ->count();
-
-        // Compute average spend
-        $avgSpend = Order::where('guest_id', $guest->id)
-            ->where('status', 'paid')
-            ->avg('total');
-        if ($avgSpend) {
-            $profile['avg_spend'] = round($avgSpend);
-        }
-
-        // Get last table used
-        $lastOrder = Order::where('guest_id', $guest->id)
-            ->whereNotNull('table_id')
-            ->latest()
-            ->first();
-        if ($lastOrder && $lastOrder->table_id) {
-            $profile['last_table_id'] = $lastOrder->table_id;
-        }
-
         $profile['profile_refreshed_at'] = now()->toIso8601String();
-
         $guest->update(['preferences' => $profile]);
-
-        Log::channel('whatsapp')->info('Guest profile refreshed from order history', [
-            'guest_id' => $guest->id,
-            'usual_orders' => $profile['usual_orders'] ?? [],
-        ]);
     }
 
     /**
@@ -212,19 +159,11 @@ class GuestMemoryService
     }
 
     /**
-     * Get recent orders for a guest with items.
+     * Get recent orders for a guest (stub: no order table in bank context).
      */
     public function getRecentOrders(Guest $guest, int $limit = null): array
     {
-        $limit = $limit ?? self::MAX_RECENT_ORDERS;
-
-        return Order::where('guest_id', $guest->id)
-            ->where('status', '!=', 'cancelled')
-            ->with(['orderItems.menuItem:id,name,price'])
-            ->latest()
-            ->limit($limit)
-            ->get()
-            ->toArray();
+        return [];
     }
 
     /**

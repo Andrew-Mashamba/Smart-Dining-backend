@@ -14,13 +14,48 @@
             padding: 0;
             background: #fff;
         }
-        .page { padding: 36px 44px 44px; }
+        /* Space at top of every page; fill page before breaking; avoid cutting paragraphs */
+        @page { margin-top: 22mm; margin-bottom: 18mm; margin-left: 15mm; margin-right: 15mm; }
+        .page { padding: 32px 40px 32px; padding-top: 24px; }
+
+        /* Running header and footer on every page */
+        .pdf-header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 14mm;
+            padding: 3mm 15mm 0;
+            font-size: 9pt;
+            color: #64748b;
+            border-bottom: 1px solid #e2e8f0;
+            background: #fff;
+            z-index: 1;
+        }
+        .pdf-header .doc-title { font-weight: 600; color: #1e3a8a; }
+        .pdf-footer {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 12mm;
+            padding: 2mm 15mm 0;
+            font-size: 8.5pt;
+            color: #64748b;
+            text-align: center;
+            border-top: 1px solid #e2e8f0;
+            background: #fff;
+            z-index: 1;
+        }
+        .pdf-footer .page-number:after {
+            content: "Page " counter(page) " of " counter(pages);
+        }
 
         .letterhead {
             background: linear-gradient(135deg, #1e3a8a 0%, #1e40af 100%);
             color: #fff;
-            padding: 20px 24px 18px;
-            margin: -36px -44px 28px -44px;
+            padding: 14px 24px 12px;
+            margin: -28px -40px 18px -40px;
         }
         .letterhead h1 { font-size: 24pt; font-weight: bold; letter-spacing: -0.02em; margin-bottom: 4px; }
         .letterhead .tagline { font-size: 9.5pt; color: #ca8a04; font-style: italic; margin-bottom: 10px; }
@@ -28,58 +63,62 @@
         .letterhead .contact a { color: #fcd34d; text-decoration: none; }
         .letterhead-accent { height: 4px; background: linear-gradient(90deg, #ca8a04, #eab308); margin-top: 14px; }
 
-        .meta-row { margin-bottom: 22px; font-size: 9.5pt; color: #1e3a8a; font-weight: 600; }
+        .meta-row { margin-bottom: 12px; font-size: 9.5pt; color: #1e3a8a; font-weight: 600; }
         .to-block {
             background: linear-gradient(to right, #eff6ff 0%, #fefce8 100%);
             border: 1px solid #bfdbfe;
             border-left: 4px solid #ca8a04;
-            padding: 14px 18px;
-            margin-bottom: 22px;
+            padding: 10px 14px;
+            margin-bottom: 12px;
         }
         .to-block .label { font-size: 8pt; font-weight: bold; color: #1e3a8a; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 6px; }
         .to-block .name { font-size: 12pt; font-weight: bold; color: #1e3a8a; }
         .to-block .addr { font-size: 9.5pt; color: #475569; margin-top: 2px; }
 
         .subject {
-            font-size: 12.5pt;
+            font-size: 12pt;
             font-weight: bold;
             color: #1e3a8a;
-            margin: 20px 0 16px;
-            padding-left: 14px;
+            margin: 12px 0 10px;
+            padding-left: 12px;
             border-left: 4px solid #ca8a04;
             line-height: 1.35;
         }
 
         .intro-box {
-            margin: 18px 0 22px;
-            padding: 18px 22px;
+            margin: 10px 0 12px;
+            padding: 12px 16px;
             border-left: 4px solid #ca8a04;
             background: #fefce8;
-            border-radius: 0 8px 8px 0;
+            border-radius: 0 6px 6px 0;
         }
         .intro-box .text { font-size: 10.5pt; color: #1e293b; }
 
         h2 {
-            font-size: 12pt;
+            font-size: 11.5pt;
             font-weight: bold;
             color: #1e3a8a;
-            margin: 28px 0 12px;
-            padding-bottom: 8px;
+            margin: 0 0 8px 0;
+            padding-bottom: 6px;
             border-bottom: 2px solid #ca8a04;
         }
-        h2:first-of-type { margin-top: 20px; }
-        h3 { font-size: 10.5pt; color: #334155; margin: 16px 0 8px; font-weight: 600; }
-        p { margin-bottom: 10px; }
+        h2:first-of-type { margin-top: 0; }
+        /* Sections flow; smaller topics can share a page. Don't break inside paragraphs or flow-rows. */
+        .section { margin-bottom: 2px; }
+        /* Section 3 (Ordering from Home — WhatsApp) starts on its own page */
+        #section-order-home { page-break-before: always; }
+        h3 { font-size: 10pt; color: #334155; margin: 10px 0 4px 0; font-weight: 600; }
+        p { margin-bottom: 6px; page-break-inside: avoid; }
         .summary { background: #eff6ff; border-left: 4px solid #1e3a8a; padding: 16px 20px; margin: 16px 0; border-radius: 0 6px 6px 0; }
         .summary strong { color: #1e3a8a; }
-        ul { margin: 8px 0 14px 22px; }
-        li { margin-bottom: 6px; }
+        ul { margin: 4px 0 8px 20px; }
+        li { margin-bottom: 4px; }
         li strong { color: #1e3a8a; }
 
         .flow-row {
             display: table;
             width: 100%;
-            margin: 20px 0;
+            margin: 10px 0;
             page-break-inside: avoid;
         }
         .flow-row .img-col {
@@ -101,9 +140,9 @@
             vertical-align: top;
         }
         .flow-row .caption {
-            font-size: 9pt;
+            font-size: 8.5pt;
             color: #64748b;
-            margin-top: 8px;
+            margin-top: 4px;
             font-style: italic;
         }
         .flow-row.full-width .img-col { display: block; width: 100%; padding-right: 0; }
@@ -111,16 +150,16 @@
         .flow-row.full-width .txt-col { display: block; width: 100%; }
 
         .benefits-grid {
-            margin: 16px 0;
+            margin: 10px 0;
             display: table;
             width: 100%;
             border-collapse: separate;
-            border-spacing: 12px 0;
+            border-spacing: 10px 0;
         }
         .benefits-grid .benefit {
             display: table-cell;
             width: 33%;
-            padding: 14px;
+            padding: 10px;
             background: #f8fafc;
             border-radius: 8px;
             border: 1px solid #e2e8f0;
@@ -129,18 +168,18 @@
         .benefits-grid .benefit strong { color: #1e3a8a; }
         .benefits-grid .benefit .icon { font-size: 18pt; margin-bottom: 6px; }
 
-        .closing { margin-top: 26px; padding: 14px 0; }
-        .signature { margin-top: 28px; padding-top: 20px; border-top: 2px solid #1e3a8a; }
+        .closing { margin-top: 14px; padding: 8px 0; }
+        .signature { margin-top: 16px; padding-top: 12px; border-top: 2px solid #1e3a8a; }
         .signature .name { font-weight: bold; color: #1e3a8a; font-size: 11pt; }
         .signature .title { font-size: 10pt; color: #475569; margin-top: 2px; }
-        .footer-note { margin-top: 32px; padding: 14px 0; border-top: 1px solid #bfdbfe; font-size: 8.5pt; color: #64748b; text-align: center; }
+        .footer-note { margin-top: 18px; padding: 10px 0; border-top: 1px solid #bfdbfe; font-size: 8.5pt; color: #64748b; text-align: center; }
 
-        .title-page { page-break-after: always; padding: 80px 44px 60px; text-align: center; }
+        .title-page { page-break-after: always; padding: 60px 40px 48px; text-align: center; }
         .title-page .brand {
             background: linear-gradient(135deg, #1e3a8a 0%, #1e40af 100%);
             color: #fff;
-            padding: 20px 24px;
-            margin: -80px -44px 40px -44px;
+            padding: 16px 24px;
+            margin: -60px -40px 28px -40px;
         }
         .title-page .brand h1 { font-size: 22pt; font-weight: bold; }
         .title-page .brand .tagline { font-size: 9pt; color: #ca8a04; font-style: italic; margin-top: 4px; }
@@ -158,17 +197,18 @@
         .title-page .doc-meta { font-size: 10pt; color: #64748b; }
         .title-page .accent { height: 4px; background: linear-gradient(90deg, #ca8a04, #eab308); width: 140px; margin: 28px auto 0; border-radius: 2px; }
 
-        .contents-page { page-break-after: always; padding: 48px 44px 60px; }
-        .contents-page h2 { font-size: 14pt; color: #1e3a8a; border: none; margin-bottom: 24px; padding-bottom: 0; }
+        .contents-page { page-break-after: always; padding: 36px 40px 48px; }
+        .contents-page h2 { font-size: 13pt; color: #1e3a8a; border: none; margin-bottom: 16px; padding-bottom: 0; }
         .contents-page ul { list-style: none; margin: 0; padding: 0; }
-        .contents-page li { margin-bottom: 10px; padding: 8px 0 8px 14px; border-left: 3px solid #ca8a04; page-break-inside: avoid; }
+        .contents-page li { margin-bottom: 6px; padding: 5px 0 5px 12px; border-left: 3px solid #ca8a04; page-break-inside: avoid; }
         .contents-page li a { color: #1e3a8a; text-decoration: none; font-weight: 600; }
         .contents-page .toc-num { color: #64748b; font-weight: bold; margin-right: 10px; }
 
-        .section { page-break-inside: avoid; }
-        p, .summary, .to-block, .intro-box, .closing, .signature, .footer-note { page-break-inside: avoid; }
+        .summary, .to-block, .intro-box, .closing, .signature, .footer-note { page-break-inside: avoid; }
         h2 { page-break-after: avoid; }
         li { page-break-inside: avoid; }
+        /* Keep headings with following content when possible */
+        h2, h3 { page-break-after: avoid; }
 
         @media print {
             body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
@@ -177,6 +217,16 @@
     </style>
 </head>
 <body>
+
+<!-- Running header (every page) -->
+<div class="pdf-header">
+    <span class="doc-title">Smart Dining — Proposal for Cape Classique</span>
+    <span style="float: right;">ZIMA Solutions</span>
+</div>
+<!-- Running footer with page number (every page) -->
+<div class="pdf-footer">
+    <div class="page-number"></div>
+</div>
 
 <!-- Title page -->
 <div class="title-page">
@@ -272,6 +322,17 @@
                     <li>Order is created in your system and sent to the kitchen/bar like any other order.</li>
                     <li>Ideal for takeaway, delivery, or &ldquo;order ahead&rdquo; before arriving at the restaurant.</li>
                 </ul>
+                <h3>What makes our WhatsApp different from flow-based chatbots</h3>
+                <p>Many solutions offer fixed menus and button-only flows. Smart Dining goes further with an <strong>AI concierge</strong> that understands natural language and remembers your guests:</p>
+                <ul>
+                    <li><strong>Natural conversation</strong> — Guests type in plain language (&ldquo;I&rsquo;d like the usual&rdquo;, &ldquo;table for four tomorrow at 7&rdquo;, &ldquo;I&rsquo;m allergic to nuts&rdquo;). No need to follow rigid step-by-step menus.</li>
+                    <li><strong>Guest memory</strong> — Returning guests are recognised: preferences, allergies, usual orders, and favourite table are used to personalise replies and avoid suggesting items they can&rsquo;t have.</li>
+                    <li><strong>Bilingual</strong> — The assistant responds in English or Swahili (Kiswahili) depending on how the guest writes.</li>
+                    <li><strong>Live staff connection</strong> — When the AI can&rsquo;t help or the guest asks for a person, requests are handed off to your team. Notifications go to the right role (waiter, kitchen, bar, manager) so nothing is lost.</li>
+                    <li><strong>Order changes and cancellations</strong> — Guests can modify or cancel orders in chat (when the kitchen hasn&rsquo;t started); the system notifies the waiter and kitchen automatically.</li>
+                    <li><strong>Receipts and feedback</strong> — Guests can ask for a PDF receipt or share feedback; the AI captures it and can alert managers when feedback is negative.</li>
+                    <li><strong>Structured flow when needed</strong> — If preferred or when the AI is unavailable, a clear menu-and-buttons flow is still available so ordering always works.</li>
+                </ul>
             </div>
         </div>
     </div>
@@ -340,6 +401,7 @@
     <div class="section" id="section-pay-card">
         <h2>7. Payment by Card at the Table</h2>
         <p>For dine-in guests who prefer to pay by card, the waiter brings the same POS device to the table. The guest taps their VISA, Mastercard, or other supported card (or inserts chip, or swipes). Payment is processed securely; the merchant receives settlement in their bank account. No need for a separate payment terminal — the same device used for ordering also takes the card.</p>
+        <p><strong>POS devices and international cards.</strong> Not all devices are approved for international card schemes. ZIMA Solutions is in a <strong>pre-agreement stage with NBC Bank</strong>, who will supply POS devices capable of accepting <strong>VISA, Mastercard, and other international cards</strong>. Once the agreement is in place, Cape Classique will be able to offer international visitors and local cardholders a seamless card payment experience at the table, with settlement in TZS in your NBC account. Our platform (Smart Dining) is designed to work with these devices so that waiters use one device for both order-taking and card payment.</p>
         <div class="flow-row">
             <div class="img-col">
                 <img src="{{ $imgBase . (isset($forPdf) && $forPdf ? 'assets/visa-card-tap-pos-device.png' : '/assets/visa-card-tap-pos-device.png') }}" alt="VISA card tap on POS" />
@@ -350,9 +412,9 @@
                 <ul>
                     <li>Waiter selects &ldquo;Pay&rdquo; on the order and chooses &ldquo;Card&rdquo;.</li>
                     <li>Device is handed to the guest (or held at the table) for tap, chip, or swipe.</li>
-                    <li>Transaction is sent to the acquirer (e.g. NBC Bank); approval is shown on the device.</li>
+                    <li>Transaction is sent to the acquirer (NBC Bank, once the agreement is live); approval is shown on the device.</li>
                     <li>Receipt can be printed or sent by email/WhatsApp if configured.</li>
-                    <li>Supports international cards (VISA, Mastercard, etc.) when integrated with your bank&rsquo;s POS programme.</li>
+                    <li>Devices supplied under our NBC pre-agreement will accept VISA, Mastercard, and other international schemes supported by NBC.</li>
                 </ul>
             </div>
         </div>
@@ -374,7 +436,7 @@
                 <strong>Kitchen &amp; bar in sync</strong><br />Orders appear on kitchen and bar displays in real time; fewer errors, faster service.
             </div>
         </div>
-        <p>Smart Dining is already built and running: table management, menu, orders, payments, reservations, and reports are included. We integrate with your bank for card-acquiring (e.g. NBC) so you can offer international card acceptance at the table. Our team handles setup, training, and ongoing support so Cape Classique can focus on hospitality.</p>
+        <p>Smart Dining is already built and running: table management, menu, orders, payments, reservations, and reports are included. For card-at-table, we are in a <strong>pre-agreement stage with NBC Bank</strong>, who will supply POS devices capable of accepting VISA, Mastercard, and other international cards—so you can offer international card acceptance once the agreement is in place. Our team handles setup, training, and ongoing support so Cape Classique can focus on hospitality.</p>
     </div>
 
     <div class="section" id="section-next">
@@ -382,8 +444,8 @@
         <p>We propose the following for Cape Classique:</p>
         <ul>
             <li><strong>Smart Dining POS platform</strong> — Backend, API, web dashboard (manager, kitchen, bar), and support for Android POS devices for waiters.</li>
-            <li><strong>WhatsApp ordering</strong> — Conversational ordering and payment links via your business WhatsApp number.</li>
-            <li><strong>Payment integration</strong> — Cash, mobile money (e.g. M-Pesa), and online card payments (Stripe). Card-at-table via POS devices in partnership with your bank (e.g. NBC).</li>
+            <li><strong>WhatsApp ordering with AI concierge</strong> — Natural-language ordering, guest memory, bilingual (English/Swahili), reservations, payment links, and staff handoff—not just fixed button flows. Optional structured menu flow as fallback.</li>
+            <li><strong>Payment integration</strong> — Cash, mobile money (e.g. M-Pesa), and online card payments (Stripe). Card-at-table via POS devices: ZIMA is in a <strong>pre-agreement with NBC Bank</strong>, who will supply POS devices capable of accepting <strong>VISA, Mastercard, and other international cards</strong>; once the agreement is finalised, Cape Classique will be able to offer these at the table with settlement in TZS.</li>
             <li><strong>Training and support</strong> — On-site or remote training for managers, waiters, kitchen and bar; ongoing technical support.</li>
         </ul>
         <p>We would be glad to schedule a demo at your premises or online, and to provide a detailed commercial proposal (pricing, timeline, and contract terms) tailored to Cape Classique. Please contact us to arrange a meeting.</p>

@@ -9,7 +9,7 @@ class GenerateCapeClassiqueProposalPdf extends Command
 {
     protected $signature = 'proposal:cape-classique-pdf {--output=Cape-Classique-Smart-Dining-Proposal.pdf} {--dir=}';
 
-    protected $description = 'Generate the Cape Classique Smart Dining proposal PDF (default: pdf/ folder; use --dir to set output directory)';
+    protected $description = 'Generate the Cape Classique Smart Dining proposal PDF (default: resources/views/pdf; use --dir to override)';
 
     public function handle(): int
     {
@@ -24,7 +24,7 @@ class GenerateCapeClassiqueProposalPdf extends Command
                 mkdir($dir, 0755, true);
             }
         } else {
-            $dir = base_path('pdf');
+            $dir = base_path('resources/views/pdf');
             if (! is_dir($dir)) {
                 mkdir($dir, 0755, true);
             }
